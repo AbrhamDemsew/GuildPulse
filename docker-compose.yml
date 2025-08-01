@@ -1,0 +1,7 @@
+version: "3.8"
+
+services:
+  py-besto-bot:
+    build: .
+    environment:
+      - ENV_FILE=.env

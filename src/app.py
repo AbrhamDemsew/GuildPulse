@@ -27,12 +27,12 @@ def generate_response(channel_id, messages):
     # Create a JSON payload for the groq API
     payload = {"model": "llama3-70b-8192", "messages": messages}
 
-    # Make a POST request to the groq API
+    # Make a POST request to the groq API with a timeout
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {GROQ_API_KEY}",
     }
-    response = requests.post(GROQ_API_URL, headers=headers, json=payload)
+    response = requests.post(GROQ_API_URL, headers=headers, json=payload, timeout=10)
 
     # Get the response from the groq API
     response_json = response.json()
@@ -48,6 +48,8 @@ def generate_response(channel_id, messages):
 
 # Define an event to handle messages
 @bot.event
+import secrets
+
 async def on_message(message):
     if message.author == bot.user:
         return
@@ -99,7 +101,7 @@ async def on_message(message):
         conversation.append({"role": "assistant", "content": response})
     else:
         # 1/10 chance to respond if not mentioned
-        if random.random() < 0.1:
+        if secrets.choice([0, 1, 0, 0, 0, 0, 0, 0, 0, 0]) < 0.1:
             # Get the user's message
             user_message = message.content
 

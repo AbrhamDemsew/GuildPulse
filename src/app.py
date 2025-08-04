@@ -25,7 +25,7 @@ conversation_history = {}
 # Define a function to generate a response using groq API
 def generate_response(channel_id, messages):
     # Create a JSON payload for the groq API
-    payload = {"model": "llama3-70b-8192", "messages": messages}
+    payload = {"model": "llama-3.1-70b-versatile", "messages": messages}
 
     # Make a POST request to the groq API with a timeout
     headers = {

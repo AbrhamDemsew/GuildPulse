@@ -8,8 +8,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 # Set up groq API credentials
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+# GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+# GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+OLLAMA_API_URL = "https://owebui.nclsp.com/ollama/v1/chat/completions"
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
 
 # Set up Discord bot credentials
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
@@ -22,21 +24,24 @@ bot = commands.Bot(command_prefix="*", intents=intents)
 conversation_history = {}
 
 
-# Define a function to generate a response using groq API
+# Define a function to generate a response using Ollama API
 def generate_response(channel_id, messages):
-    # Create a JSON payload for the groq API
-    payload = {"model": "llama-3.1-70b-versatile", "messages": messages}
+    # Create a JSON payload for the Ollama API
+    payload = {"model": "phi3:latest", "messages": messages}
 
-    # Make a POST request to the groq API with a timeout
+    # Make a POST request to the Ollama API
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Authorization": f"Bearer {OLLAMA_API_KEY}",
+        "accept": "application/json",
     }
-    response = requests.post(GROQ_API_URL, headers=headers, json=payload, timeout=10)
+    response = requests.post(
+        OLLAMA_API_URL, headers=headers, json=payload, timeout=None
+    )
 
-    # Get the response from the groq API
+    # Get the response from the Ollama API
     response_json = response.json()
-    print(f"Response from groq API: {response_json}")
+    print(f"Response from Ollama API: {response_json}")
 
     # Check if the 'choices' key exists and if it contains at least one element
     if "choices" in response_json and len(response_json["choices"]) > 0:
@@ -48,8 +53,6 @@ def generate_response(channel_id, messages):
 
 # Define an event to handle messages
 @bot.event
-import secrets
-
 async def on_message(message):
     if message.author == bot.user:
         return
@@ -73,11 +76,11 @@ async def on_message(message):
         channel_messages = [msg async for msg in message.channel.history(limit=10)]
         channel_messages.reverse()
 
-        # Create a list of messages to pass to the groq API
+        # Create a list of messages to pass to the Ollama API
         api_messages = [
             {
                 "role": "system",
-                "content": "You act as the user asks for and discuss using the Discord syntax, emojis, and speaking like your interlocutors. Be creative and respond differently each time, considering the context and previous conversations. Try to mimic the way users talk, using their tone, language, and style, emojis unless they explicitly ask you to do otherwise. If users ask for code, assume the role of an expert and provide well-written, concise, and correct code snippets. Never include the bot's name or user mentions in your responses, except if you are directly asked to do so or you want to talk especially to someone.",
+                "content": "Tu agis selon les demandes des utilisateurs et tu discutes en utilisant la syntaxe de Discord, des emojis, et en parlant comme tes interlocuteurs. Sois créatif et réponds différemment à chaque fois, en prenant en compte le contexte et les conversations précédentes. Imite la manière de parler des utilisateurs, en utilisant leur ton, leur langage et leur style, ainsi que des emojis, sauf s'ils te demandent explicitement de faire autrement. Si les utilisateurs demandent du code, adopte le rôle d'un expert et fournis des extraits de code bien écrits, concis et corrects. N'inclus jamais le nom du bot ou des mentions d'utilisateur dans tes réponses, sauf si c'est demandé directement ou si tu veux t'adresser spécifiquement à quelqu'un.",
             }
         ]
         for msg in channel_messages:
@@ -91,7 +94,7 @@ async def on_message(message):
         # Add the conversation history to the API messages
         api_messages.extend(conversation)
 
-        # Generate a response using groq API
+        # Generate a response using Ollama API
         response = generate_response(message.channel.id, api_messages)
 
         # Send the response back to the user
@@ -101,7 +104,7 @@ async def on_message(message):
         conversation.append({"role": "assistant", "content": response})
     else:
         # 1/10 chance to respond if not mentioned
-        if secrets.choice([0, 1, 0, 0, 0, 0, 0, 0, 0, 0]) < 0.1:
+        if random.random() < 0.1:
             # Get the user's message
             user_message = message.content
 
@@ -119,7 +122,7 @@ async def on_message(message):
             channel_messages = [msg async for msg in message.channel.history(limit=10)]
             channel_messages.reverse()
 
-            # Create a list of messages to pass to the groq API
+            # Create a list of messages to pass to the Ollama API
             api_messages = [
                 {
                     "role": "system",
@@ -137,7 +140,7 @@ async def on_message(message):
             # Add the conversation history to the API messages
             api_messages.extend(conversation)
 
-            # Generate a response using groq API
+            # Generate a response using Ollama API
             response = generate_response(message.channel.id, api_messages)
 
             # Send the response back to the user

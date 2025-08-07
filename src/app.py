@@ -126,13 +126,16 @@ async def on_message(message):
             api_messages = [
                 {
                     "role": "system",
-                    "content": "You act as the user ask for and discuss using the discord syntax, emojis, and speaking like your interlocutors.",
+                    "content": "You act as the user ask for and discuss using the discord syntax, emojis, and speaking like your interlocutors. You should never add 'User: <username> Message:' to your response",
                 }
             ]
             for msg in channel_messages:
                 if msg.author != bot.user:
                     api_messages.append(
-                        {"role": "user", "content": f"{msg.author.name}: {msg.content}"}
+                        {
+                            "role": "user",
+                            "content": f"User: {msg.author.name} Message: {msg.content}",
+                        }
                     )
                 else:
                     api_messages.append({"role": "assistant", "content": msg.content})

@@ -1,5 +1,6 @@
 import os
 import random
+import re
 
 import discord
 import requests
@@ -18,6 +19,8 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 
 # Create a Discord bot instance
 intents = discord.Intents.default()
+intents.messages = True
+intents.message_content = True
 bot = commands.Bot(command_prefix="*", intents=intents)
 
 # Define a dictionary to store conversation history
@@ -27,7 +30,7 @@ conversation_history = {}
 # Define a function to generate a response using Ollama API
 def generate_response(channel_id, messages):
     # Create a JSON payload for the Ollama API
-    payload = {"model": "phi3:latest", "messages": messages}
+    payload = {"model": "mannix/gemma2-9b-sppo-iter3:latest", "messages": messages}
 
     # Make a POST request to the Ollama API
     headers = {
@@ -51,6 +54,18 @@ def generate_response(channel_id, messages):
         return "API related Error"
 
 
+# Define a function to fetch content from a URL
+def fetch_url_content(url):
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.text[:1000]  # Limit content to 1000 characters
+        else:
+            return "Failed to fetch content from the URL."
+    except Exception as e:
+        return f"Error fetching content: {e}"
+
+
 # Define an event to handle messages
 @bot.event
 async def on_message(message):
@@ -61,6 +76,21 @@ async def on_message(message):
     if bot.user.mentioned_in(message):
         # Get the user's message
         user_message = message.content.replace(f"<@{bot.user.id}>", "").strip()
+
+        # Check for links in the message
+        urls = re.findall(r"(https?://\S+)", user_message)
+        url_content = ""
+        if urls:
+            for url in urls:
+                # Check if the message has embeds
+                if message.embeds:
+                    for embed in message.embeds:
+                        if embed.description and len(embed.description.split()) > 10:
+                            url_content += embed.description + "\n"
+                        else:
+                            url_content += fetch_url_content(url) + "\n"
+                else:
+                    url_content += fetch_url_content(url) + "\n"
 
         # Get the conversation history for the channel
         if message.channel.id not in conversation_history:
@@ -91,8 +121,12 @@ async def on_message(message):
             else:
                 api_messages.append({"role": "assistant", "content": msg.content})
 
-        # Add the conversation history to the API messages
+        # Add the conversation history and URL content to the API messages
         api_messages.extend(conversation)
+        if url_content:
+            api_messages.append(
+                {"role": "system", "content": f"URL content: {url_content}"}
+            )
 
         # Generate a response using Ollama API
         response = generate_response(message.channel.id, api_messages)
@@ -103,10 +137,28 @@ async def on_message(message):
         # Update the conversation history with the response
         conversation.append({"role": "assistant", "content": response})
     else:
-        # 1/10 chance to respond if not mentioned
-        if random.random() < 0.1:
+        # 1/20 chance to respond if not mentioned
+        if random.random() < 0.05:
             # Get the user's message
             user_message = message.content
+
+            # Check for links in the message
+            urls = re.findall(r"(https?://\S+)", user_message)
+            url_content = ""
+            if urls:
+                for url in urls:
+                    # Check if the message has embeds
+                    if message.embeds:
+                        for embed in message.embeds:
+                            if (
+                                embed.description
+                                and len(embed.description.split()) > 10
+                            ):
+                                url_content += embed.description + "\n"
+                            else:
+                                url_content += fetch_url_content(url) + "\n"
+                    else:
+                        url_content += fetch_url_content(url) + "\n"
 
             # Get the conversation history for the channel
             if message.channel.id not in conversation_history:
@@ -119,7 +171,7 @@ async def on_message(message):
             )
 
             # Get the last 10 messages of the channel
-            channel_messages = [msg async for msg in message.channel.history(limit=10)]
+            channel_messages = [msg async for msg in message.channel.history(limit=20)]
             channel_messages.reverse()
 
             # Create a list of messages to pass to the Ollama API
@@ -140,8 +192,12 @@ async def on_message(message):
                 else:
                     api_messages.append({"role": "assistant", "content": msg.content})
 
-            # Add the conversation history to the API messages
+            # Add the conversation history and URL content to the API messages
             api_messages.extend(conversation)
+            if url_content:
+                api_messages.append(
+                    {"role": "system", "content": f"URL content: {url_content}"}
+                )
 
             # Generate a response using Ollama API
             response = generate_response(message.channel.id, api_messages)

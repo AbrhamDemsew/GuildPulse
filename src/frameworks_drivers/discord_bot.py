@@ -6,13 +6,10 @@ import discord
 import requests
 from bs4 import BeautifulSoup
 from discord.ext import commands
-from dotenv import load_dotenv
 
 from domain.entities import ConversationHistory
 from interface_adapters.api_client import OllamaClient, OpenAIClient
 from use_cases.message_processing import MessageProcessor
-
-load_dotenv()
 
 
 def setup_discord_bot(

@@ -58,7 +58,6 @@ def setup_discord_bot(
                     break
 
         if bot.user.mentioned_in(message) or random.random() < 0.05:
-            await message.channel.typing()
             await process_message(message, user_message, urls, url_content, image_url)
 
     async def process_message(
@@ -78,19 +77,9 @@ def setup_discord_bot(
         api_messages = [
             {
                 "role": "system",
-                "content": (
-                    "Tu agis selon les demandes des utilisateurs et tu discutes en utilisant la syntaxe de Discord, "
-                    "des emojis, et en parlant comme tes interlocuteurs. Sois créatif et réponds différemment à chaque "
-                    "fois, en prenant en compte le contexte et les conversations précédentes. Imite la manière de parler des "
-                    "utilisateurs, en utilisant leur ton, leur langage et leur style, ainsi que des emojis, sauf s'ils te "
-                    "demandent explicitement de faire autrement. Si les utilisateurs demandent du code, adopte le rôle "
-                    "d'un expert et fournis des extraits de code bien écrits, concis et corrects. N'inclus jamais le nom du bot "
-                    "ou des mentions d'utilisateur dans tes réponses, sauf si c'est demandé directement ou si tu veux "
-                    "t'adresser spécifiquement à quelqu'un."
-                ),
+                "content": "Your system message here",
             }
         ]
-
         api_messages.extend(conversation)
         if url_content:
             api_messages.append(

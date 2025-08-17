@@ -8,14 +8,22 @@ load_dotenv()
 
 
 def main():
-    DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+    DISCORD_TOKEN = os.getenv("DISCORD_TOKEN") or ""
     OLLAMA_API_URL = "https://owebui.nclsp.com/ollama/v1/chat/completions"
-    OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
+    OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY") or ""
+    HYPERBOLIC_URL = "https://api.hyperbolic.xyz/v1/image/generation"
+    HYPERBOLIC_API_KEY = os.getenv("HYPERBOLIC_API_KEY") or ""
     OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") or ""
 
     setup_discord_bot(
-        DISCORD_TOKEN, OLLAMA_API_URL, OLLAMA_API_KEY, OPENAI_API_URL, OPENAI_API_KEY
+        DISCORD_TOKEN,
+        OLLAMA_API_URL,
+        OLLAMA_API_KEY,
+        HYPERBOLIC_URL,
+        HYPERBOLIC_API_KEY,
+        OPENAI_API_URL,
+        OPENAI_API_KEY,
     )
 
 

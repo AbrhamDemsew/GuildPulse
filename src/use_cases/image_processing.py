@@ -1,3 +1,4 @@
+import json
 import requests
 from interface_adapters.api_client import OpenAIClient
 
@@ -23,23 +24,30 @@ class ImageProcessor:
             ],
             "max_tokens": 300,
         }
-        return self.api_client.generate_response(payload)
+
+        response = self.api_client.generate_response(payload)
+
+        if response is None:
+            raise ValueError("The API client returned None, which is not expected.")
+
+        return response
+
     def generate_image(self, prompt: str) -> str:
-        url = "https://api.hyperbolic.xyz/v1/image/generation"
+        url = self.api_client.api_url
         headers = {
             "Content-Type": "application/json",
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJuY2xzcGllcnJvdEBnbWFpbC5jb20ifQ.DRTxzUIbTmif-4djHhODe84RJFnxN8Qi70WrCDlvxJA"
+            "Authorization": "Bearer " + self.api_client.api_key,
         }
         data = {
             "model_name": "FLUX.1-dev",
             "prompt": prompt,
-            "steps": 30,
+            "steps": 8,
             "cfg_scale": 5,
             "enable_refiner": False,
             "height": 1024,
             "width": 1024,
-            "backend": "auto"
+            "backend": "auto",
         }
         response = requests.post(url, headers=headers, json=data)
         response_data = response.json()
-        return response_data.get("image_url", "No image generated")
+        return response_data["images"][0]["image"]

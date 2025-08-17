@@ -8,7 +8,7 @@ class OllamaClient:
         self.api_url = api_url
         self.api_key = api_key
 
-    def generate_response(self, payload: Dict[str, Any]) -> Optional[str]:
+    def generate_response(self, payload: Dict[str, Any]) -> str:
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}",
@@ -23,9 +23,9 @@ class OllamaClient:
             if "choices" in response_json and len(response_json["choices"]) > 0:
                 return response_json["choices"][0]["message"]["content"]
             else:
-                return None
+                return "No response from API."
         except requests.RequestException as e:
-            return None
+            return "Error: {}".format(e)
 
 
 class OpenAIClient(OllamaClient):

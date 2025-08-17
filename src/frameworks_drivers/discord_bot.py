@@ -1,3 +1,6 @@
+import asyncio
+import base64
+import io
 import random
 import re
 from typing import List
@@ -9,6 +12,7 @@ from discord.ext import commands
 
 from domain.entities import ConversationHistory
 from interface_adapters.api_client import OllamaClient, OpenAIClient
+from use_cases.image_processing import ImageProcessor
 from use_cases.message_processing import MessageProcessor
 
 
@@ -16,6 +20,8 @@ def setup_discord_bot(
     discord_token: str,
     ollama_api_url: str,
     ollama_api_key: str,
+    hyperbolic_url: str,
+    hyperbolic_api_key: str,
     openai_url,
     openai_api_key: str,
 ):
@@ -36,6 +42,30 @@ def setup_discord_bot(
         if message.author == bot.user:
             return
 
+        if message.content.startswith("*image ") and len(message.content) > 7:
+            prompt = message.content[7:]
+            channel = message.channel
+
+            async with channel.typing():
+                hyperbolic_client = OpenAIClient(hyperbolic_url, hyperbolic_api_key)
+                image_processor = ImageProcessor(hyperbolic_client)
+
+                loop = asyncio.get_running_loop()
+                image_bytes = await loop.run_in_executor(
+                    None, image_processor.generate_image, prompt
+                )
+
+                if isinstance(image_bytes, str):
+                    image_bytes = base64.b64decode(image_bytes)
+
+                image_stream = io.BytesIO(image_bytes)
+
+                await channel.send(
+                    file=discord.File(image_stream, filename="image.png")
+                )
+
+        if bot.user is None:
+            return
         user_message = (
             message.content.replace(f"<@{bot.user.id}>", "").strip()
             if bot.user.mentioned_in(message)
@@ -47,8 +77,8 @@ def setup_discord_bot(
             for url in urls:
                 url_content += fetch_url_content(url) + "\\n"
 
-        image_url = None
-        if message.attachments:
+        image_url = ""
+        if message.attachments and bot.user.mentioned_in(message):
             for attachment in message.attachments:
                 if any(
                     ext in attachment.url.lower()
@@ -66,7 +96,7 @@ def setup_discord_bot(
         user_message: str,
         urls: List[str],
         url_content: str,
-        image_url: str = None,
+        image_url: str = "",
     ) -> None:
         channel_id = message.channel.id
         conversation = conversation_history.get_history(channel_id)
@@ -97,7 +127,7 @@ def setup_discord_bot(
                 {"role": "system", "content": f"URL content: {url_content}"}
             )
 
-        recent_messages = [msg async for msg in message.channel.history(limit=2)]
+        recent_messages = [msg async for msg in message.channel.history(limit=1)]
         if recent_messages and recent_messages[0].attachments:
             for attachment in recent_messages[0].attachments:
                 if any(

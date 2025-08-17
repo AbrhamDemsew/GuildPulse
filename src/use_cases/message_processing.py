@@ -17,7 +17,7 @@ class MessageProcessor:
         self.image_processor = ImageProcessor(openai_api_client)
 
     def process_message(
-        self, channel_id: int, messages: List[Dict[str, Any]], image_url: str = None
+        self, channel_id: int, messages: List[Dict[str, Any]], image_url: str = ""
     ) -> str:
         if image_url:
             image_description = self.image_processor.describe_image(image_url)

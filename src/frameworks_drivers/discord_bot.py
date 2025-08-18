@@ -12,6 +12,7 @@ from discord.ext import commands
 
 from domain.entities import ConversationHistory
 from interface_adapters.api_client import OllamaClient, OpenAIClient
+from typing import Optional
 from use_cases.image_processing import ImageProcessor
 from use_cases.message_processing import MessageProcessor
 
@@ -22,7 +23,7 @@ def setup_discord_bot(
     ollama_api_key: str,
     hyperbolic_url: str,
     hyperbolic_api_key: str,
-    openai_url,
+    openai_url: str,
     openai_api_key: str,
 ):
     intents = discord.Intents.default()
@@ -98,6 +99,9 @@ def setup_discord_bot(
         url_content: str,
         image_url: str = "",
     ) -> None:
+        """
+        Process the message and send a response.
+        """
         channel_id = message.channel.id
         conversation = conversation_history.get_history(channel_id)
 
@@ -146,6 +150,9 @@ def setup_discord_bot(
         )
 
     def fetch_url_content(url: str) -> str:
+        """
+        Fetch the content of the URL.
+        """
         try:
             response = requests.get(url)
             response.raise_for_status()

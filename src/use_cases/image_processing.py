@@ -1,4 +1,3 @@
-import json
 import requests
 from interface_adapters.api_client import OpenAIClient
 
@@ -8,6 +7,9 @@ class ImageProcessor:
         self.api_client = api_client
 
     def describe_image(self, image_url: str) -> str:
+        """
+        Describe the image using the API client.
+        """
         payload = {
             "model": "gpt-4o-mini",
             "messages": [
@@ -33,6 +35,9 @@ class ImageProcessor:
         return response
 
     def generate_image(self, prompt: str) -> str:
+        """
+        Generate an image based on the given prompt.
+        """
         url = self.api_client.api_url
         headers = {
             "Content-Type": "application/json",

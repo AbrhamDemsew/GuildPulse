@@ -29,5 +29,5 @@ class OllamaClient:
 
 
 class OpenAIClient(OllamaClient):
-    def __init__(self, api_url, api_key: str):
+    def __init__(self, api_url: str, api_key: str):
         super().__init__(api_url, api_key)

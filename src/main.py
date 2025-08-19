@@ -17,13 +17,13 @@ def main():
     openai_api_key = os.getenv("OPENAI_API_KEY", "")
 
     setup_discord_bot(
-        DISCORD_TOKEN,
-        OLLAMA_API_URL,
-        OLLAMA_API_KEY,
-        HYPERBOLIC_URL,
-        HYPERBOLIC_API_KEY,
-        OPENAI_API_URL,
-        OPENAI_API_KEY,
+        discord_token,
+        ollama_api_url,
+        ollama_api_key,
+        hyperbolic_url,
+        hyperbolic_api_key,
+        openai_api_url,
+        openai_api_key,
     )
 
 

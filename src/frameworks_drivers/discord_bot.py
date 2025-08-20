@@ -7,7 +7,7 @@ from typing import List
 
 import discord
 import requests
-from bs4 import BeautifulSoup
+from utils import fetch_url_content
 from discord.ext import commands
 
 from domain.entities import ConversationHistory

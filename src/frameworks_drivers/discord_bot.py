@@ -143,11 +143,6 @@ def setup_discord_bot(
 
         response = message_processor.process_message(
             channel_id, api_messages, image_url
-        )
-        await message.channel.send(f"{response}")
-        conversation_history.add_message(
-            channel_id, {"role": "assistant", "content": response}
-        )
 
     def fetch_url_content(url: str) -> str:
         """

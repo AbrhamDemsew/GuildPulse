@@ -143,6 +143,7 @@ def setup_discord_bot(
 
         response = message_processor.process_message(
             channel_id, api_messages, image_url
+        )
 
     def fetch_url_content(url: str) -> str:
         """

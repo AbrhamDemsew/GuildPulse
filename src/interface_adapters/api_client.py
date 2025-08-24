@@ -1,6 +1,6 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
-import requests
+from utils import generate_response
 
 
 class OllamaClient:
@@ -9,23 +9,7 @@ class OllamaClient:
         self.api_key = api_key
 
     def generate_response(self, payload: Dict[str, Any]) -> str:
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}",
-            "accept": "application/json",
-        }
-        try:
-            response = requests.post(
-                self.api_url, headers=headers, json=payload, timeout=None
-            )
-            response.raise_for_status()
-            response_json = response.json()
-            if "choices" in response_json and len(response_json["choices"]) > 0:
-                return response_json["choices"][0]["message"]["content"]
-            else:
-                return "No response from API."
-        except requests.RequestException as e:
-            return "Error: {}".format(e)
+        return generate_response(self.api_url, self.api_key, payload)
 
 
 class OpenAIClient(OllamaClient):

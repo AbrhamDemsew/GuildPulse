@@ -1,8 +1,8 @@
 from typing import Any, Dict, List
 
 from domain.entities import ConversationHistory
-from use_cases.image_processing import ImageProcessor
 from interface_adapters.api_client import OllamaClient, OpenAIClient
+from use_cases.image_processing import ImageProcessor
 
 
 class MessageProcessor:
@@ -25,7 +25,10 @@ class MessageProcessor:
         if image_url:
             image_description = self.image_processor.describe_image(image_url)
             messages.append(
-                {"role": "system", "content": f"Image description: {image_description}"}
+                {
+                    "role": "system",
+                    "content": f"description de l'image: {image_description}",
+                }
             )
 
         payload = {

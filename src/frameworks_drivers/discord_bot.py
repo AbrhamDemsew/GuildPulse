@@ -1,21 +1,22 @@
 import asyncio
 import base64
 import io
+import logging
 import random
 import re
 from typing import List
 
 import discord
-import requests
-from utils import fetch_url_content
-from bs4 import BeautifulSoup
 from discord.ext import commands
 
 from domain.entities import ConversationHistory
 from interface_adapters.api_client import OllamaClient, OpenAIClient
-from typing import Optional
 from use_cases.image_processing import ImageProcessor
 from use_cases.message_processing import MessageProcessor
+from utils import fetch_url_content
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def setup_discord_bot(
@@ -43,6 +44,8 @@ def setup_discord_bot(
     async def on_message(message: discord.Message) -> None:
         if message.author == bot.user:
             return
+
+        logger.info(f"Message received: {message.content}")
 
         if message.content.startswith("*image ") and len(message.content) > 7:
             prompt = message.content[7:]
@@ -73,11 +76,11 @@ def setup_discord_bot(
             if bot.user.mentioned_in(message)
             else message.content
         )
-        urls = re.findall(r"(https?://\\S+)", user_message)
+        urls = re.findall(r"(https?://\S+)", user_message)
         url_content = ""
         if urls:
             for url in urls:
-                url_content += fetch_url_content(url) + "\\n"
+                url_content += fetch_url_content(url) + "\n"
 
         image_url = ""
         if message.attachments and bot.user.mentioned_in(message):
@@ -103,6 +106,7 @@ def setup_discord_bot(
         """
         Process the message and send a response.
         """
+        logger.debug(f"Processing message: {user_message}")
         channel_id = message.channel.id
         conversation = conversation_history.get_history(channel_id)
 
@@ -146,16 +150,8 @@ def setup_discord_bot(
             channel_id, api_messages, image_url
         )
 
-    def fetch_url_content(url: str) -> str:
-        """
-        Fetch the content of the URL.
-        """
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
-            soup = BeautifulSoup(response.text, "html.parser")
-            return soup.get_text()[:1000]
-        except requests.RequestException as e:
-            return f"Error fetching content: {e}"
+        logger.info(f"Response generated: {response}")
+
+        await message.channel.send(response)
 
     bot.run(discord_token)

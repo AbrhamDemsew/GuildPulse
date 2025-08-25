@@ -5,10 +5,8 @@ import logging
 import random
 import re
 from typing import List
-
 import discord
 from discord.ext import commands
-
 from domain.entities import ConversationHistory
 from interface_adapters.api_client import OllamaClient, OpenAIClient
 from use_cases.image_processing import ImageProcessor

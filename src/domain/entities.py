@@ -1,6 +1,5 @@
 from typing import Any, Dict, List
 
-
 class ConversationHistory:
     def __init__(self):
         self.history: Dict[int, List[Dict[str, Any]]] = {}

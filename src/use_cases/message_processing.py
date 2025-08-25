@@ -1,9 +1,7 @@
 from typing import Any, Dict, List
-
 from domain.entities import ConversationHistory
 from interface_adapters.api_client import OllamaClient, OpenAIClient
 from use_cases.image_processing import ImageProcessor
-
 
 class MessageProcessor:
     def __init__(

@@ -1,8 +1,6 @@
 import logging
 import os
-
 from dotenv import load_dotenv
-
 from frameworks_drivers.discord_bot import setup_discord_bot
 
 load_dotenv()

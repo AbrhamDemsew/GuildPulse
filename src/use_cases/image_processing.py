@@ -31,7 +31,6 @@ class ImageProcessor:
 
         if response is None:
             raise ValueError("The API client returned None, which is not expected.")
-
         return response
 
     def generate_image(self, prompt: str) -> str:

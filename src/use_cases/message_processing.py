@@ -6,13 +6,14 @@ from use_cases.image_processing import ImageProcessor
 class MessageProcessor:
     def __init__(
         self,
-        conversation_history: ConversationHistory,
-        ollama_api_client: OllamaClient,
-        openai_api_client: OpenAIClient,
+        history: ConversationHistory,
+        ollama_client: OllamaClient,
+        openai_client: OpenAIClient,
     ):
-        self.conversation_history = conversation_history
-        self.ollama_api_client = ollama_api_client
-        self.image_processor = ImageProcessor(openai_api_client)
+        self.history = history
+        self.ollama_client = ollama_client
+        self.image_processor = ImageProcessor(openai_client)
+        logging.debug("MessageProcessor initialized with history, ollama_client, and openai_client.")
 
     def process_message(
         self, channel_id: int, messages: List[Dict[str, Any]], image_url: str = ""
@@ -20,7 +21,9 @@ class MessageProcessor:
         """
         Process the message and return the response.
         """
+        logging.debug(f"Processing message for channel_id: {channel_id} with messages: {messages} and image_url: {image_url}")
         if image_url:
+            logging.debug(f"Image URL provided: {image_url}")
             image_description = self.image_processor.describe_image(image_url)
             messages.append(
                 {
@@ -33,4 +36,6 @@ class MessageProcessor:
             "model": "mannix/gemma2-9b-sppo-iter3:latest",
             "messages": messages,
         }
-        return self.ollama_api_client.generate_response(payload)
+        response = self.ollama_client.generate_response(payload)
+        logging.info(f"Generated response: {response}")
+        return response

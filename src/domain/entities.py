@@ -2,12 +2,16 @@ from typing import Any, Dict, List
 
 class ConversationHistory:
     def __init__(self):
-        self.history: Dict[int, List[Dict[str, Any]]] = {}
+        self.conversations: Dict[int, List[Dict[str, Any]]] = {}
+        logging.debug("ConversationHistory initialized.")
 
     def add_message(self, channel_id: int, message: Dict[str, Any]):
-        if channel_id not in self.history:
-            self.history[channel_id] = []
-        self.history[channel_id].append(message)
+        if channel_id not in self.conversations:
+            self.conversations[channel_id] = []
+        self.conversations[channel_id].append(message)
+        logging.debug(f"Added message to channel_id {channel_id}: {message}")
 
     def get_history(self, channel_id: int) -> List[Dict[str, Any]]:
-        return self.history.get(channel_id, [])
+        history = self.conversations.get(channel_id, [])
+        logging.debug(f"Retrieved history for channel_id {channel_id}: {history}")
+        return history

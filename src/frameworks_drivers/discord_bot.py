@@ -31,19 +31,18 @@ def setup_discord_bot(
     intents.message_content = True
     bot = commands.Bot(command_prefix="*", intents=intents)
 
-    conversation_history = ConversationHistory()
-    ollama_api_client = OllamaClient(ollama_api_url, ollama_api_key)
-    openai_api_client = OpenAIClient(openai_url, openai_api_key)
-    message_processor = MessageProcessor(
-        conversation_history, ollama_api_client, openai_api_client
-    )
+    history = ConversationHistory()
+    ollama_client = OllamaClient(ollama_api_url, ollama_api_key)
+    openai_client = OpenAIClient(openai_url, openai_api_key)
+    message_processor = MessageProcessor(history, ollama_client, openai_client)
+    logging.debug("Discord bot setup with clients and message processor.")
 
     @bot.event
     async def on_message(message: discord.Message) -> None:
         if message.author == bot.user:
             return
 
-        logger.info(f"Message received: {message.content}")
+        logging.info(f"Message received: {message.content}")
 
         if message.content.startswith("*image ") and len(message.content) > 7:
             prompt = message.content[7:]
@@ -52,6 +51,7 @@ def setup_discord_bot(
             async with channel.typing():
                 hyperbolic_client = OpenAIClient(hyperbolic_url, hyperbolic_api_key)
                 image_processor = ImageProcessor(hyperbolic_client)
+                logging.debug(f"Generating image for prompt: {prompt}")
 
                 loop = asyncio.get_running_loop()
                 image_bytes = await loop.run_in_executor(
@@ -69,26 +69,22 @@ def setup_discord_bot(
 
         if bot.user is None:
             return
-        user_message = (
-            message.content.replace(f"<@{bot.user.id}>", "").strip()
-            if bot.user.mentioned_in(message)
-            else message.content
-        )
+        user_message = message.content.replace(f"<@{bot.user.id}>", "").strip() if bot.user.mentioned_in(message) else message.content
+        logging.debug(f"Processed user message: {user_message}")
         urls = re.findall(r"(https?://\S+)", user_message)
         url_content = ""
         if urls:
             for url in urls:
                 url_content += fetch_url_content(url) + "\n"
+            logging.debug(f"Fetched URL content: {url_content}")
 
         image_url = ""
         if message.attachments and bot.user.mentioned_in(message):
             for attachment in message.attachments:
-                if any(
-                    ext in attachment.url.lower()
-                    for ext in [".png", ".jpg", ".jpeg", ".gif"]
-                ):
+                if any(ext in attachment.url.lower() for ext in [".png", ".jpg", ".jpeg", ".gif"]):
                     image_url = attachment.url
                     break
+            logging.debug(f"Image URL from attachments: {image_url}")
 
         if bot.user.mentioned_in(message) or random.random() < 0.05:
             await message.channel.typing()
@@ -137,18 +133,13 @@ def setup_discord_bot(
         recent_messages = [msg async for msg in message.channel.history(limit=1)]
         if recent_messages and recent_messages[0].attachments:
             for attachment in recent_messages[0].attachments:
-                if any(
-                    ext in attachment.url.lower()
-                    for ext in [".png", ".jpg", ".jpeg", ".gif"]
-                ):
+                if any(ext in attachment.url.lower() for ext in [".png", ".jpg", ".jpeg", ".gif"]):
                     image_url = attachment.url
                     break
+            logging.debug(f"Image URL from recent messages: {image_url}")
 
-        response = message_processor.process_message(
-            channel_id, api_messages, image_url
-        )
-
-        logger.info(f"Response generated: {response}")
+        response = message_processor.process_message(channel_id, api_messages, image_url)
+        logging.info(f"Response generated: {response}")
 
         await message.channel.send(response)
 

@@ -19,17 +19,11 @@ def main():
     hyperbolic_api_key = os.getenv("HYPERBOLIC_API_KEY", "")
     openai_api_url = "https://api.openai.com/v1/chat/completions"
     openai_api_key = os.getenv("OPENAI_API_KEY", "")
+    logging.debug("Environment variables loaded.")
 
     logger.info("Starting the Discord bot...")
-    setup_discord_bot(
-        discord_token,
-        ollama_api_url,
-        ollama_api_key,
-        hyperbolic_url,
-        hyperbolic_api_key,
-        openai_api_url,
-        openai_api_key,
-    )
+    setup_discord_bot(discord_token, ollama_api_url, ollama_api_key, hyperbolic_url, hyperbolic_api_key, openai_api_url, openai_api_key)
+    logging.info("Discord bot setup complete.")
 
 
 if __name__ == "__main__":

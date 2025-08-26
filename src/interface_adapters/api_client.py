@@ -8,7 +8,10 @@ class OllamaClient:
         self.api_key = api_key
 
     def generate_response(self, payload: Dict[str, Any]) -> str:
-        return generate_response(self.api_url, self.api_key, payload)
+        logging.debug(f"Generating response with payload: {payload}")
+        response = generate_response(self.api_url, self.api_key, payload)
+        logging.info(f"Generated response: {response}")
+        return response
 
 
 class OpenAIClient(OllamaClient):

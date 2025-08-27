@@ -1,4 +1,7 @@
+import logging
+
 import requests
+
 from interface_adapters.api_client import OpenAIClient
 
 
@@ -42,7 +45,10 @@ class ImageProcessor:
         """
         url = self.client.api_url
         logging.debug(f"Generating image with prompt: {prompt}")
-        headers = {"Content-Type": "application/json", "Authorization": f"Bearer {self.client.api_key}"}
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.client.api_key}",
+        }
         data = {
             "model_name": "FLUX.1-dev",
             "prompt": prompt,

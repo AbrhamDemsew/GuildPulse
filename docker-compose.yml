@@ -5,3 +5,4 @@ services:
     build: .
     environment:
       - ENV_FILE=.env
+    restart: unless-stopped

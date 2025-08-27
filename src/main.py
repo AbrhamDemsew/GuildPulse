@@ -1,6 +1,8 @@
 import logging
 import os
+
 from dotenv import load_dotenv
+
 from frameworks_drivers.discord_bot import setup_discord_bot
 
 load_dotenv()
@@ -22,7 +24,15 @@ def main():
     logging.debug("Environment variables loaded.")
 
     logger.info("Starting the Discord bot...")
-    setup_discord_bot(discord_token, ollama_api_url, ollama_api_key, hyperbolic_url, hyperbolic_api_key, openai_api_url, openai_api_key)
+    setup_discord_bot(
+        discord_token,
+        ollama_api_url,
+        ollama_api_key,
+        hyperbolic_url,
+        hyperbolic_api_key,
+        openai_api_url,
+        openai_api_key,
+    )
     logging.info("Discord bot setup complete.")
 
 

@@ -5,8 +5,10 @@ import logging
 import random
 import re
 from typing import List
+
 import discord
 from discord.ext import commands
+
 from domain.entities import ConversationHistory
 from interface_adapters.api_client import OllamaClient, OpenAIClient
 from use_cases.image_processing import ImageProcessor
@@ -69,7 +71,11 @@ def setup_discord_bot(
 
         if bot.user is None:
             return
-        user_message = message.content.replace(f"<@{bot.user.id}>", "").strip() if bot.user.mentioned_in(message) else message.content
+        user_message = (
+            message.content.replace(f"<@{bot.user.id}>", "").strip()
+            if bot.user.mentioned_in(message)
+            else message.content
+        )
         logging.debug(f"Processed user message: {user_message}")
         urls = re.findall(r"(https?://\S+)", user_message)
         url_content = ""
@@ -81,7 +87,10 @@ def setup_discord_bot(
         image_url = ""
         if message.attachments and bot.user.mentioned_in(message):
             for attachment in message.attachments:
-                if any(ext in attachment.url.lower() for ext in [".png", ".jpg", ".jpeg", ".gif"]):
+                if any(
+                    ext in attachment.url.lower()
+                    for ext in [".png", ".jpg", ".jpeg", ".gif"]
+                ):
                     image_url = attachment.url
                     break
             logging.debug(f"Image URL from attachments: {image_url}")
@@ -102,7 +111,7 @@ def setup_discord_bot(
         """
         logger.debug(f"Processing message: {user_message}")
         channel_id = message.channel.id
-        conversation = conversation_history.get_history(channel_id)
+        conversation = history.get_history(channel_id)
 
         conversation.append(
             {"role": "user", "content": f"{message.author.name}: {user_message}"}
@@ -133,12 +142,17 @@ def setup_discord_bot(
         recent_messages = [msg async for msg in message.channel.history(limit=1)]
         if recent_messages and recent_messages[0].attachments:
             for attachment in recent_messages[0].attachments:
-                if any(ext in attachment.url.lower() for ext in [".png", ".jpg", ".jpeg", ".gif"]):
+                if any(
+                    ext in attachment.url.lower()
+                    for ext in [".png", ".jpg", ".jpeg", ".gif"]
+                ):
                     image_url = attachment.url
                     break
             logging.debug(f"Image URL from recent messages: {image_url}")
 
-        response = message_processor.process_message(channel_id, api_messages, image_url)
+        response = message_processor.process_message(
+            channel_id, api_messages, image_url
+        )
         logging.info(f"Response generated: {response}")
 
         await message.channel.send(response)

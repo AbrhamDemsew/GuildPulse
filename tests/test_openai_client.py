@@ -1,0 +1,78 @@
+"""Tests for OpenAI client."""
+
+from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
+
+from src.interface_adapters.openai_client import OpenAIClient
+
+
+@pytest.fixture
+def mock_openai_client():
+    """Create a mock OpenAI client."""
+    with patch("src.interface_adapters.openai_client.OpenAI") as mock_openai:
+        client = OpenAIClient(
+            api_key="test_key",
+            base_url="https://test.com/v1",
+            model="test-model",
+            max_tokens=100,
+            temperature=0.5,
+        )
+        mock_openai.return_value = Mock()
+        return client
+
+
+@pytest.mark.asyncio
+async def test_chat_completion_async(mock_openai_client):
+    """Test chat completion async method."""
+    mock_response = Mock()
+    mock_response.choices = [Mock()]
+    mock_response.choices[0].message.content = "Test response"
+    mock_response.choices[0].message.role = "assistant"
+
+    mock_client = mock_openai_client.client
+    mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
+
+    messages = [{"role": "user", "content": "Hello"}]
+    response = await mock_openai_client.chat_completion_async(messages)
+
+    assert response == "Test response"
+    mock_client.chat.completions.create.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_chat_completion_with_custom_params(mock_openai_client):
+    """Test chat completion with custom parameters."""
+    mock_response = Mock()
+    mock_response.choices = [Mock()]
+    mock_response.choices[0].message.content = "Custom response"
+
+    mock_client = mock_openai_client.client
+    mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
+
+    messages = [{"role": "user", "content": "Test"}]
+    response = await mock_openai_client.chat_completion_async(
+        messages, model="custom-model", max_tokens=200, temperature=0.8
+    )
+
+    assert response == "Custom response"
+    mock_client.chat.completions.create.assert_called_once_with(
+        model="custom-model", messages=messages, max_tokens=200, temperature=0.8
+    )
+
+
+def test_health_check(mock_openai_client):
+    """Test health check method."""
+    mock_client = mock_openai_client.client
+    mock_client.models.list = Mock(return_value=Mock())
+
+    assert mock_openai_client.health_check() is True
+    mock_client.models.list.assert_called_once()
+
+
+def test_health_check_failure(mock_openai_client):
+    """Test health check with failure."""
+    mock_client = mock_openai_client.client
+    mock_client.models.list = Mock(side_effect=Exception("API Error"))
+
+    assert mock_openai_client.health_check() is False

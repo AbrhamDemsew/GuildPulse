@@ -1,111 +1,400 @@
-# Discord Bot Project
+# Discord Bot with OpenAI Integration
 
-## Overview
+A modern Discord bot built with Python 3.14, featuring OpenAI API integration for intelligent conversations. Production-ready with Docker support, comprehensive testing, and modern architecture.
 
-This project is a Discord bot that interacts with users using the Ollama and OpenAI APIs. The bot processes messages, fetches content from URLs, and generates responses using AI models.
+## 🚀 Features
 
-## Project Structure
+- **Intelligent Conversations**: Powered by OpenAI API (works with OpenAI, Ollama, or any OpenAI-compatible API)
+- **Context-Aware Responses**: Maintains conversation history across channels
+- **Smart Mention Detection**: Only responds when mentioned, in DM, or replying to the bot
+- **Message Management**: Keeps track of the last 100 messages per channel
+- **Async Architecture**: Non-blocking operations for optimal performance
+- **Modern Stack**: Python 3.14, discord.py 2.0, Pydantic, standard logging
+- **Production Ready**: Docker support, health checks, comprehensive logging
+- **Well-Tested**: Complete test suite with pytest
+- **Clean Architecture**: Separated concerns for maintainability
 
-```
-.env
-.env.example
-.gitignore
-docker-compose.yml
-Dockerfile
-README.md
-requirements.txt
-src/
-    domain/
-        entities.py
-    frameworks_drivers/
-        discord_bot.py
-    interface_adapters/
-        api_client.py
-    main.py
-    use_cases/
-        image_processing.py
-        message_processing.py
-```
+## 📋 Prerequisites
 
-### Key Files and Directories
-
-- `.env`: Environment variables for the project.
-- `.env.example`: Example environment variable settings.
-- `.gitignore`: Files and directories to be ignored by Git.
-- `docker-compose.yml`: Docker Compose configuration.
-- `Dockerfile`: Docker configuration for setting up the environment.
-- `requirements.txt`: List of Python package dependencies.
-- `src/`: Source code directory.
-  - `domain/entities.py`: Contains the `ConversationHistory` class.
-  - `frameworks_drivers/discord_bot.py`: Contains the Discord bot setup and event handling.
-  - `interface_adapters/api_client.py`: Contains the `OllamaClient` and `OpenAIClient` classes for API interactions.
-  - `main.py` Entry point for the application.
-  - `use_cases/`: Contains use case logic for message and image processing.
-
-## Setup
-
-### Prerequisites
-
-- recommend Python 3.12.1+
+- Python 3.14 or higher
 - Docker (optional, for containerized deployment)
+- Discord Bot Token
+- OpenAI API Key (or compatible API key)
 
-### Installation
+## 🏗️ Architecture
+
+The bot follows Clean Architecture principles with clear separation of concerns:
+
+```
+src/
+├── config.py              # Configuration management (Pydantic)
+├── domain/                # Core business entities
+│   └── entities.py        # ConversationHistory
+├── frameworks_drivers/    # External system integrations
+│   └── discord_bot.py     # Discord bot implementation
+├── interface_adapters/    # API clients
+│   └── openai_client.py   # OpenAI API client
+├── use_cases/             # Business logic
+│   └── message_processing.py
+└── main.py                # Application entry point
+```
+
+See [Architecture Documentation](docs/ARCHITECTURE.md) for detailed architecture information.
+
+## 🔧 Installation
+
+### Local Development
 
 1. Clone the repository:
+```bash
+git clone https://github.com/ncls-p/py-besto-bot.git
+cd py-besto-bot
+```
 
-   ```sh
-   git clone https://github.com/ncls-p/py-besto-bot.git
-   cd py-besto-bot
-   ```
+2. Create a virtual environment:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: `.venv\Scripts\activate`
+```
 
-2. Create a virtual environment and activate it:
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-   ```sh
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
-   ```
+4. Configure environment variables:
+```bash
+cp .env.example .env
+```
 
-3. Install the dependencies:
+5. Edit `.env` and add your configuration:
+```env
+DISCORD_TOKEN="your-discord-token"
+OPENAI_API_KEY="your-openai-api-key"
+OPENAI_BASE_URL="https://api.openai.com/v1"
+OPENAI_MODEL="gpt-4o-mini"
+OPENAI_MAX_TOKENS=500
+```
 
-   ```sh
-   pip install -r requirements.txt
-   ```
+### Docker Deployment
 
-4. Copy the example environment file and set your environment variables:
-   ```sh
-   cp .env.example .env
-   # Edit .env and set your DISCORD_TOKEN, OLLAMA_API_KEY, and OPENAI_API_KEY
-   ```
+1. Build the Docker image:
+```bash
+docker build -t py-besto-bot .
+```
 
-### Running the Bot
+2. Run with Docker Compose:
+```bash
+docker-compose up -d
+```
 
-1. Run the bot:
-   ```sh
-   python src/main.py
-   ```
+3. Check logs:
+```bash
+docker-compose logs -f
+```
 
-### Using Docker
+## ⚙️ Configuration
 
-1. Docker compose:
+### Environment Variables
 
-   ```sh
-   docker compose up -d --build
-   ```
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DISCORD_TOKEN` | Yes | - | Discord bot token |
+| `OPENAI_API_KEY` | Yes | - | OpenAI API key |
+| `OPENAI_BASE_URL` | No | `https://api.openai.com/v1` | Custom API base URL |
+| `OPENAI_MODEL` | No | `gpt-4o-mini` | Default model name |
+| `OPENAI_MAX_TOKENS` | No | `500` | Maximum tokens for generation |
+| `OPENAI_TEMPERATURE` | No | `0.7` | Generation temperature |
+| `ENABLE_IMAGE_GENERATION` | No | `true` | Enable image generation |
+| `ENABLE_IMAGE_DESCRIPTION` | No | `true` | Enable image description |
+| `LOG_LEVEL` | No | `INFO` | Logging level |
+| `DEBUG` | No | `false` | Debug mode |
 
-## Usage
+### Configuration Examples
 
-- The bot listens for messages in Discord and processes them using the Ollama and OpenAI APIs.
-- It can fetch content from URLs, images and generate responses based on the content.
+#### Using Ollama (Local LLM)
+```env
+OPENAI_BASE_URL="http://localhost:11434/v1"
+OPENAI_MODEL="llama2"
+OPENAI_API_KEY="ollama"
+```
 
-## Contributing
+#### Using a Custom API Proxy
+```env
+OPENAI_BASE_URL="https://your-proxy.com/v1"
+OPENAI_MODEL="custom-model"
+OPENAI_API_KEY="your-proxy-key"
+```
 
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-branch`).
-3. Make your changes.
-4. Commit your changes (`git commit -m 'Add some feature'`).
-5. Push to the branch (`git push origin feature-branch`).
-6. Open a pull request.
+## 📖 Usage
 
-## License
+### Basic Commands
 
-This project is licensed under the MIT License.
+- **@bot**: Mention the bot to trigger a response
+- **\*help**: Show help information
+- **\*clear**: Clear conversation history (admin only)
+
+### Example Usage
+
+```
+User: @bot Hello, how are you?
+Bot: Salut ! Je vais bien, merci de demander ! Comment puis-je t'aider aujourd'hui ?
+
+User: @bot Qu'est-ce que tu as fait aujourd'hui?
+Bot: J'ai passé le temps à apprendre de nouvelles choses. Et toi ?
+```
+
+### Discord Slash Commands
+
+The bot supports Discord slash commands:
+
+- `/help` - Show help information
+- `/clear` - Clear conversation history (admin only)
+
+## 🧪 Testing
+
+### Run Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=src --cov-report=html
+
+# Run specific test file
+pytest tests/test_openai_client.py
+
+# Run with verbose output
+pytest -v
+```
+
+### Code Quality
+
+```bash
+# Format code with black
+black src/
+
+# Check code style with flake8
+flake8 src/
+
+# Type check with mypy
+mypy src/
+
+# Install and run pre-commit hooks
+pre-commit install
+pre-commit run --all-files
+```
+
+## 🚢 Docker
+
+### Docker Compose
+
+The `docker-compose.yml` file includes:
+
+- Automatic restart policy
+- Health checks
+- JSON file logging with rotation
+- Network isolation
+- Container labels
+
+### Docker Commands
+
+```bash
+# Build and start
+docker-compose up -d --build
+
+# View logs
+docker-compose logs -f
+
+# Stop container
+docker-compose down
+
+# Restart container
+docker-compose restart
+
+# Execute command in container
+docker-compose exec bot python -c "print('Hello')"
+```
+
+## 📊 Development
+
+### Project Structure
+
+```
+src/
+├── config.py              # Configuration management
+├── main.py                # Application entry point
+├── domain/                # Domain entities
+├── frameworks_drivers/    # Discord bot integration
+├── interface_adapters/    # API clients
+├── use_cases/             # Business logic
+└── utils/                 # Utility functions
+```
+
+### Code Style
+
+- **Language**: Python 3.14
+- **Formatter**: Black (80 character lines)
+- **Linter**: Flake8
+- **Type Checker**: Mypy
+- **Documentation**: Google style docstrings
+
+### Running Locally
+
+```bash
+# Run the bot
+python src/main.py
+
+# Run with specific configuration
+LOG_LEVEL=DEBUG DEBUG=true python src/main.py
+```
+
+## 🔐 Security
+
+### Best Practices
+
+1. **Never commit**: `.env` file with sensitive data
+2. **Use environment variables**: Store API keys and tokens
+3. **Input validation**: All inputs are validated
+4. **Non-root user**: Docker containers run as non-root
+5. **HTTPS**: Always use secure connections
+
+### .gitignore
+
+The `.gitignore` file includes:
+- Environment variables (.env files)
+- Virtual environments (.venv/)
+- Logs (logs/)
+- Python cache (__pycache__/)
+- IDE files (.vscode/, .idea/)
+
+## 📝 Logging
+
+### Log Levels
+
+- `DEBUG`: Detailed diagnostic information (development)
+- `INFO`: General information about bot operations
+- `WARNING`: Warning messages
+- `ERROR`: Error messages
+- `CRITICAL`: Critical errors
+
+### Log Files
+
+Logs are stored in `logs/` directory:
+- `debug_YYYY-MM-DD.log` - Debug logs (development)
+- `info_YYYY-MM-DD.log` - Info logs (production)
+- Logs are rotated and compressed automatically
+
+### Viewing Logs
+
+```bash
+# View current log
+tail -f logs/info_$(date +%Y-%m-%d).log
+
+# Search for errors
+grep ERROR logs/*.log
+
+# View debug logs
+tail -f logs/debug_$(date +%Y-%m-%d).log
+```
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Bot won't start:**
+```bash
+# Check Discord token is set
+echo $DISCORD_TOKEN
+
+# Check OpenAI API key is set
+echo $OPENAI_API_KEY
+
+# Check logs for errors
+docker-compose logs
+```
+
+**API connection issues:**
+```bash
+# Test OpenAI connection
+curl -X POST https://api.openai.com/v1/chat/completions \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hello"}]}'
+```
+
+**Docker issues:**
+```bash
+# Rebuild Docker image
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
+
+# Check container status
+docker-compose ps
+```
+
+## 📚 Documentation
+
+- [Architecture Documentation](docs/ARCHITECTURE.md) - Detailed system architecture
+- [API Documentation](docs/API.md) - OpenAI API integration details
+- [Development Guide](docs/DEVELOPMENT.md) - Development workflow and guidelines
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run tests and code quality checks
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+### Development Workflow
+
+```bash
+# Install pre-commit hooks
+pre-commit install
+
+# Make changes and commit
+git add .
+git commit -m "feat: add new feature"
+
+# Pre-commit checks will run automatically
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- OpenAI for the incredible API
+- discord.py team for the Discord library
+- The Python community
+
+## 🔗 Links
+
+- [Discord API Documentation](https://discord.com/developers/docs)
+- [OpenAI API Documentation](https://platform.openai.com/docs)
+- [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+
+## 📞 Support
+
+For issues, questions, or contributions, please open an issue on GitHub.
+
+## 🎯 Future Roadmap
+
+- [ ] Database integration for conversation persistence
+- [ ] Rate limiting and API usage tracking
+- [ ] Admin dashboard and web interface
+- [ ] Plugin system for custom commands
+- [ ] Multi-language support (i18n)
+- [ ] Advanced image editing capabilities
+- [ ] Webhook support for external integrations
+- [ ] Metrics and observability (Prometheus, Grafana)
+
+---
+
+**Built with ❤️ using Python 3.14, discord.py 2.0, and OpenAI API**

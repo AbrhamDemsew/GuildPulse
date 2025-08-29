@@ -2,7 +2,31 @@ version: "3.8"
 
 services:
   py-besto-bot:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: py-besto-bot
     environment:
       - ENV_FILE=.env
     restart: unless-stopped
+    stop_grace_period: 10s
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - bot-network
+    labels:
+      - "com.py-besto-bot.description=Discord Bot with OpenAI Integration"
+      - "com.py-besto-bot.version=2.0.0"
+
+networks:
+  bot-network:
+    driver: bridge

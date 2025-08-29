@@ -1,160 +1,181 @@
 import asyncio
-import base64
-import io
 import logging
-import random
 import re
-from typing import List
+from typing import Any
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
-from domain.entities import ConversationHistory
-from interface_adapters.api_client import OllamaClient, OpenAIClient
-from use_cases.image_processing import ImageProcessor
-from use_cases.message_processing import MessageProcessor
-from utils import fetch_url_content
+from src.config import get_settings, setup_logging
+from src.domain.entities import ConversationHistory
+from src.interface_adapters.openai_client import OpenAIClient
+from src.use_cases.message_processing import MessageProcessor
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def setup_discord_bot(
-    discord_token: str,
-    ollama_api_url: str,
-    ollama_api_key: str,
-    hyperbolic_url: str,
-    hyperbolic_api_key: str,
-    openai_url: str,
-    openai_api_key: str,
-):
+def setup_discord_bot() -> commands.Bot:
+    """Setup and configure the Discord bot with modern discord.py 2.0."""
+    settings = get_settings()
+
+    setup_logging(settings)
+
+    logger.info("Starting Discord bot initialization...")
+
     intents = discord.Intents.default()
-    intents.messages = True
     intents.message_content = True
-    bot = commands.Bot(command_prefix="*", intents=intents)
+    intents.messages = True
+
+    bot = commands.Bot(command_prefix=commands.when_mentioned_or("*"), intents=intents)
 
     history = ConversationHistory()
-    ollama_client = OllamaClient(ollama_api_url, ollama_api_key)
-    openai_client = OpenAIClient(openai_url, openai_api_key)
-    message_processor = MessageProcessor(history, ollama_client, openai_client)
-    logging.debug("Discord bot setup with clients and message processor.")
+    openai_client = OpenAIClient(
+        api_key=settings.OPENAI_API_KEY,
+        base_url=settings.OPENAI_BASE_URL,
+        model=settings.OPENAI_MODEL,
+        max_tokens=settings.OPENAI_MAX_TOKENS,
+        temperature=settings.OPENAI_TEMPERATURE,
+    )
+    message_processor = MessageProcessor(history, openai_client)
+
+    logger.info("Discord bot initialized with OpenAI client")
+
+    @bot.event
+    async def on_ready() -> None:
+        if bot.user:
+            logger.info(f"Logged in as {bot.user} (ID: {bot.user.id})")
+            logger.info(f"Connected to {len(bot.guilds)} guild(s)")
+            try:
+                synced = await bot.tree.sync()
+                logger.info(f"Synced {len(synced)} application commands")
+            except Exception as e:
+                logger.error(f"Error syncing commands: {e}")
+        else:
+            logger.warning("Bot user not initialized")
 
     @bot.event
     async def on_message(message: discord.Message) -> None:
-        if message.author == bot.user:
+        if message.author.bot:
             return
 
-        logging.info(f"Message received: {message.content}")
+        logger.debug(f"Message received from {message.author.name}: {message.content}")
 
-        if message.content.startswith("*image ") and len(message.content) > 7:
-            prompt = message.content[7:]
-            channel = message.channel
-
-            async with channel.typing():
-                hyperbolic_client = OpenAIClient(hyperbolic_url, hyperbolic_api_key)
-                image_processor = ImageProcessor(hyperbolic_client)
-                logging.debug(f"Generating image for prompt: {prompt}")
-
-                loop = asyncio.get_running_loop()
-                image_bytes = await loop.run_in_executor(
-                    None, image_processor.generate_image, prompt
-                )
-
-                if isinstance(image_bytes, str):
-                    image_bytes = base64.b64decode(image_bytes)
-
-                image_stream = io.BytesIO(image_bytes)
-
-                await channel.send(
-                    file=discord.File(image_stream, filename="image.png")
-                )
-
-        if bot.user is None:
+        if not bot.user:
             return
-        user_message = (
-            message.content.replace(f"<@{bot.user.id}>", "").strip()
-            if bot.user.mentioned_in(message)
-            else message.content
+
+        should_respond = False
+
+        if message.channel.type == discord.ChannelType.private:
+            should_respond = True
+            logger.info(f"Direct message from {message.author.name}")
+        elif message.mentions and bot.user in message.mentions:
+            should_respond = True
+            logger.info(f"Mentioned by {message.author.name}")
+        elif message.reference and message.reference.message_id and message.reference.resolved:
+            referenced_message = message.reference.resolved
+            if (
+                isinstance(referenced_message, discord.Message)
+                and referenced_message.author == bot.user
+            ):
+                should_respond = True
+                logger.info(f"Reply to bot from {message.author.name}")
+
+        if not should_respond:
+            return
+
+        await handle_message_processing(message, message_processor, settings)
+
+    @bot.tree.command(name="help", description="Show help information")
+    async def help_command(interaction: discord.Interaction) -> None:
+        embed = discord.Embed(
+            title="Help",
+            description="Available commands:",
+            color=discord.Color.blue(),
         )
-        logging.debug(f"Processed user message: {user_message}")
-        urls = re.findall(r"(https?://\S+)", user_message)
-        url_content = ""
-        if urls:
-            for url in urls:
-                url_content += fetch_url_content(url) + "\n"
-            logging.debug(f"Fetched URL content: {url_content}")
-
-        image_url = ""
-        if message.attachments and bot.user.mentioned_in(message):
-            for attachment in message.attachments:
-                if any(
-                    ext in attachment.url.lower()
-                    for ext in [".png", ".jpg", ".jpeg", ".gif"]
-                ):
-                    image_url = attachment.url
-                    break
-            logging.debug(f"Image URL from attachments: {image_url}")
-
-        if bot.user.mentioned_in(message) or random.random() < 0.05:
-            await message.channel.typing()
-            await process_message(message, user_message, urls, url_content, image_url)
-
-    async def process_message(
-        message: discord.Message,
-        user_message: str,
-        urls: List[str],
-        url_content: str,
-        image_url: str = "",
-    ) -> None:
-        """
-        Process the message and send a response.
-        """
-        logger.debug(f"Processing message: {user_message}")
-        channel_id = message.channel.id
-        conversation = history.get_history(channel_id)
-
-        conversation.append(
-            {"role": "user", "content": f"{message.author.name}: {user_message}"}
+        embed.add_field(
+            name="@bot",
+            value="Trigger the bot to respond to your message",
+            inline=False,
         )
-
-        api_messages = [
-            {
-                "role": "system",
-                "content": (
-                    "Tu agis selon les demandes des utilisateurs et tu discutes en utilisant la syntaxe de Discord, "
-                    "des emojis, et en parlant comme tes interlocuteurs. Sois créatif et réponds différemment à chaque "
-                    "fois, en prenant en compte le contexte et les conversations précédentes. Imite la manière de parler des "
-                    "utilisateurs, en utilisant leur ton, leur langage et leur style, ainsi que des emojis, sauf s'ils te "
-                    "demandent explicitement de faire autrement. Si les utilisateurs demandent du code, adopte le rôle "
-                    "d'un expert et fournis des extraits de code bien écrits, concis et corrects. N'inclus jamais le nom du bot "
-                    "ou des mentions d'utilisateur dans tes réponses, sauf si c'est demandé directement ou si tu veux "
-                    "t'adresser spécifiquement à quelqu'un."
-                ),
-            }
-        ]
-
-        api_messages.extend(conversation)
-        if url_content:
-            api_messages.append(
-                {"role": "system", "content": f"URL content: {url_content}"}
-            )
-
-        recent_messages = [msg async for msg in message.channel.history(limit=1)]
-        if recent_messages and recent_messages[0].attachments:
-            for attachment in recent_messages[0].attachments:
-                if any(
-                    ext in attachment.url.lower()
-                    for ext in [".png", ".jpg", ".jpeg", ".gif"]
-                ):
-                    image_url = attachment.url
-                    break
-            logging.debug(f"Image URL from recent messages: {image_url}")
-
-        response = message_processor.process_message(
-            channel_id, api_messages, image_url
+        embed.add_field(
+            name="/help",
+            value="Show this help message",
+            inline=False,
         )
-        logging.info(f"Response generated: {response}")
+        embed.add_field(
+            name="/clear",
+            value="Clear conversation history (admin only)",
+            inline=False,
+        )
+        await interaction.response.send_message(embed=embed)
 
-        await message.channel.send(response)
+    @bot.tree.command(name="clear", description="Clear conversation history")
+    @app_commands.checks.has_permissions(manage_messages=True)
+    async def clear_history(interaction: discord.Interaction) -> None:
+        if interaction.channel is None:
+            await interaction.response.send_message("Error: Could not determine channel.")
+            return
+        channel_id = interaction.channel.id
+        history.clear_history(channel_id)
+        await interaction.response.send_message("Conversation history cleared!")
 
-    bot.run(discord_token)
+    @bot.event
+    async def on_error(event: str, *args: Any, **kwargs: Any) -> None:
+        logger.error(f"Error in event {event}: {args}, {kwargs}")
+
+    return bot
+
+
+async def handle_message_processing(
+    message: discord.Message, message_processor: MessageProcessor, _settings: Any
+) -> None:
+    """Handle message processing for bot responses."""
+    try:
+        channel = message.channel
+        channel_id = channel.id
+        author_name = message.author.display_name
+
+        user_message = message.content
+
+        logger.debug(f"Processing user message from {author_name}: {user_message}")
+
+        clean_message = user_message.replace(f"<@{message.author.id}>", "").strip()
+        clean_message = re.sub(r"<@!?(\d+)>", "", clean_message).strip()
+
+        if len(clean_message) > 500:
+            clean_message = clean_message[:500] + "..."
+
+        if not clean_message:
+            clean_message = "[attachment]"
+
+        message_processor.add_to_conversation(channel_id, "user", f"{author_name}: {clean_message}")
+
+        async with channel.typing():
+            response = await message_processor.generate_reply(channel_id)
+
+        if response:
+            await channel.send(response)
+            message_processor.add_to_conversation(channel_id, "assistant", response)
+        else:
+            logger.warning("No response generated")
+
+    except Exception as e:
+        logger.error(f"Error processing message: {e}")
+        await message.channel.send(f"Error processing your message: {e}")
+
+
+async def main() -> None:
+    """Main entry point for the Discord bot."""
+    settings = get_settings()
+    bot = setup_discord_bot()
+
+    if not settings.DISCORD_TOKEN:
+        logger.error("DISCORD_TOKEN not found in environment variables")
+        raise ValueError("DISCORD_TOKEN is required")
+
+    await bot.start(settings.DISCORD_TOKEN)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

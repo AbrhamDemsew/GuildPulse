@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "ChunkHound": {
+      "type": "local",
+      "command": [
+        "chunkhound",
+        "mcp",
+        "/Users/nclsp/work/perso/py-besto-bot"
+      ]
+    }
+  }
+}

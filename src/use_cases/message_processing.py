@@ -1,48 +1,54 @@
+import asyncio
 import logging
-from typing import Any, Dict, List
 
-from domain.entities import ConversationHistory
-from interface_adapters.api_client import OllamaClient, OpenAIClient
-from use_cases.image_processing import ImageProcessor
+from src.domain.entities import ConversationHistory
+from src.interface_adapters.openai_client import OpenAIClient
 
 
 class MessageProcessor:
+    """Processes messages using OpenAI API."""
+
     def __init__(
         self,
         history: ConversationHistory,
-        ollama_client: OllamaClient,
-        openai_client: OpenAIClient,
+        client: OpenAIClient,
     ):
         self.history = history
-        self.ollama_client = ollama_client
-        self.image_processor = ImageProcessor(openai_client)
-        logging.debug(
-            "MessageProcessor initialized with history, ollama_client, and openai_client."
-        )
+        self.client = client
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("MessageProcessor initialized")
+        self.channel_locks: dict[int, asyncio.Lock] = {}
 
-    def process_message(
-        self, channel_id: int, messages: List[Dict[str, Any]], image_url: str = ""
-    ) -> str:
-        """
-        Process the message and return the response.
-        """
-        logging.debug(
-            f"Processing message for channel_id: {channel_id} with messages: {messages} and image_url: {image_url}"
-        )
-        if image_url:
-            logging.debug(f"Image URL provided: {image_url}")
-            image_description = self.image_processor.describe_image(image_url)
-            messages.append(
-                {
+    def get_lock(self, channel_id: int) -> asyncio.Lock:
+        """Get or create a lock for a specific channel."""
+        if channel_id not in self.channel_locks:
+            self.channel_locks[channel_id] = asyncio.Lock()
+        return self.channel_locks[channel_id]
+
+    async def generate_reply(self, channel_id: int) -> str:
+        """Generate a reply using conversation history."""
+        async with self.get_lock(channel_id):
+            try:
+                history = self.history.get_history(channel_id)
+                system_prompt = {
                     "role": "system",
-                    "content": f"description de l'image: {image_description}",
+                    "content": "Tu es un assistant Discord utile et amical. Réponds de manière conversationnelle et naturelle en français. Ne réponds jamais avec du code Python, sauf si l'utilisateur demande explicitement du code. Sois concis, amical et engageant.",
                 }
-            )
+                messages = [system_prompt] + history
+                response = await self.client.chat_completion_async(messages=messages)
+                self.logger.info(f"Generated response for channel_id {channel_id}")
+                return response
 
-        payload = {
-            "model": "mannix/gemma2-9b-sppo-iter3:latest",
-            "messages": messages,
-        }
-        response = self.ollama_client.generate_response(payload)
-        logging.info(f"Generated response: {response}")
-        return response
+            except Exception as e:
+                self.logger.error(f"Error generating reply: {e}")
+                return f"Erreur lors de la génération de la réponse: {e}"
+
+    def add_to_conversation(self, channel_id: int, role: str, content: str) -> None:
+        """Add a message to the conversation history."""
+        message = {"role": role, "content": content}
+        self.history.add_message(channel_id, message)
+        self.logger.debug(f"Added message to channel_id {channel_id}")
+
+    def get_conversation_history(self, channel_id: int) -> list[dict[str, str]]:
+        """Get conversation history for a channel."""
+        return self.history.get_history(channel_id)

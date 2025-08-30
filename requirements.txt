@@ -1,6 +1,7 @@
 # Core dependencies
 openai>=1.50.0           # Official OpenAI SDK
 pydantic>=2.9.0         # Data validation & settings
+pydantic-settings>=2.6.0  # Pydantic settings management
 discord.py>=2.4.0       # Modern Discord bot framework
 python-dotenv>=1.0.1    # Environment variables
 

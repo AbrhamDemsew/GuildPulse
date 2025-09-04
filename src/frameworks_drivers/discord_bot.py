@@ -134,11 +134,10 @@ async def handle_message_processing(
     try:
         channel = message.channel
         channel_id = channel.id
-        author_name = message.author.display_name
 
         user_message = message.content
 
-        logger.debug(f"Processing user message from {author_name}: {user_message}")
+        logger.debug(f"Processing user message from {message.author.display_name}: {user_message}")
 
         clean_message = user_message.replace(f"<@{message.author.id}>", "").strip()
         clean_message = re.sub(r"<@!?(\d+)>", "", clean_message).strip()
@@ -149,14 +148,11 @@ async def handle_message_processing(
         if not clean_message:
             clean_message = "[attachment]"
 
-        message_processor.add_to_conversation(channel_id, "user", f"{author_name}: {clean_message}")
-
         async with channel.typing():
-            response = await message_processor.generate_reply(channel_id)
+            response = await message_processor.process_user_turn(channel_id, clean_message)
 
         if response:
             await channel.send(response)
-            message_processor.add_to_conversation(channel_id, "assistant", response)
         else:
             logger.warning("No response generated")
 

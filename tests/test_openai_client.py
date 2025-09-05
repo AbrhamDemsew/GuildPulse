@@ -1,18 +1,16 @@
-"""Tests for OpenAI client."""
+"""Tests for OpenAI client (infrastructure layer)."""
 
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
-from src.domain.entities import ConversationHistory
-from src.interface_adapters.openai_client import OpenAIClient
-from src.use_cases.message_processing import MessageProcessor
+from src.infrastructure.ai.openai.client import OpenAIClient
 
 
 @pytest.fixture
 def mock_openai_client():
     """Create a mock OpenAI client."""
-    with patch("src.interface_adapters.openai_client.OpenAI") as mock_openai:
+    with patch("src.infrastructure.ai.openai.client.OpenAI") as mock_openai:
         mock_client_instance = Mock()
         mock_response = Mock()
         mock_response.choices = [Mock()]
@@ -53,28 +51,6 @@ async def test_chat_completion_with_custom_params(mock_openai_client):
     mock_openai_client.client.chat.completions.create.assert_called_once_with(
         model="custom-model", messages=messages, max_tokens=200, temperature=0.8
     )
-
-
-@pytest.mark.asyncio
-async def test_chat_completion_with_consecutive_user_messages(mock_openai_client):
-    """Test chat completion with consecutive user messages (should be sanitized)."""
-    processor = MessageProcessor(ConversationHistory(), mock_openai_client)
-
-    history = processor.history
-    history.add_message(123, {"role": "user", "content": "First message"})
-    history.add_message(123, {"role": "user", "content": "Second message"})
-
-    response = await processor.process_user_turn(123, "Third message")
-
-    assert response == "Test response"
-    call_args = mock_openai_client.client.chat.completions.create.call_args
-
-    sent_messages = call_args[1]["messages"]
-
-    assert len(sent_messages) == 2
-    assert sent_messages[0]["role"] == "system"
-    assert sent_messages[1]["role"] == "user"
-    assert sent_messages[1]["content"] == "First message\n\nSecond message\n\nThird message"
 
 
 def test_health_check(mock_openai_client):

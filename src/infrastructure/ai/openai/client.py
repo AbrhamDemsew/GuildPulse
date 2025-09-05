@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any
+from typing import Any, Literal
 
 from openai import OpenAI
 
@@ -15,13 +15,15 @@ class OpenAIClient:
         model: str,
         max_tokens: int = 500,
         temperature: float = 0.7,
-    ):
+    ) -> None:
         self.client = OpenAI(api_key=api_key, base_url=base_url)
         self.model = model
         self.max_tokens = max_tokens
         self.temperature = temperature
         self.logger = logging.getLogger(__name__)
-        self.logger.info(f"OpenAI client initialized with model: {model}, base_url: {base_url}")
+        self.logger.info(
+            f"OpenAI client initialized with model: {model}, base_url: {base_url}"
+        )
 
     def chat_completion(
         self,
@@ -36,12 +38,14 @@ class OpenAIClient:
 
             response_kwargs = {
                 "model": model or self.model,
-                "messages": messages,  # type: ignore[arg-type]
+                "messages": messages,
                 "max_tokens": max_tokens or self.max_tokens,
                 "temperature": temperature or self.temperature,
             }
             if "thinking" in (model or self.model).lower():
-                response_kwargs["extra_body"] = {"chat_template_kwargs": {"enable_thinking": False}}
+                response_kwargs["extra_body"] = {
+                    "chat_template_kwargs": {"enable_thinking": False}
+                }
 
             response = self.client.chat.completions.create(**response_kwargs)
 
@@ -85,7 +89,9 @@ class OpenAIClient:
                 "max_tokens": max_tokens,
             }
             if "thinking" in self.model.lower():
-                response_kwargs["extra_body"] = {"chat_template_kwargs": {"enable_thinking": False}}
+                response_kwargs["extra_body"] = {
+                    "chat_template_kwargs": {"enable_thinking": False}
+                }
 
             response = self.client.chat.completions.create(**response_kwargs)
 
@@ -103,14 +109,25 @@ class OpenAIClient:
         self,
         prompt: str,
         model: str | None = None,
-        size: str = "1024x1024",
-        quality: str = "standard",
+        size: Literal[
+            "auto",
+            "1024x1024",
+            "1536x1024",
+            "1024x1536",
+            "256x256",
+            "512x512",
+            "1792x1024",
+            "1024x1792",
+        ] = "1024x1024",
+        quality: Literal[
+            "standard", "hd", "low", "medium", "high", "auto"
+        ] = "standard",
     ) -> str:
         """Generate an image based on the given prompt."""
         try:
             self.logger.debug(f"Generating image with prompt: {prompt}")
 
-            response = self.client.images.generate(  # type: ignore[call-overload]
+            response = self.client.images.generate(
                 prompt=prompt,
                 model=model or "dall-e-3",
                 size=size,
@@ -118,12 +135,14 @@ class OpenAIClient:
                 n=1,
             )
 
-            image_data = response.data[0]
-            if image_data is None:
+            if response.data is None or len(response.data) == 0:
                 raise ValueError("No image data returned from generation")
-            image_url = image_data.url or ""
-            if not image_url:
+
+            image_data = response.data[0]
+            if image_data.url is None:
                 raise ValueError("No image URL returned from generation")
+
+            image_url = image_data.url
             self.logger.info(f"Generated image: {image_url}")
             return image_url
 

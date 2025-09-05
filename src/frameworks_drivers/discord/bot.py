@@ -1,3 +1,5 @@
+"""Discord framework integration."""
+
 import asyncio
 import logging
 import re
@@ -7,16 +9,60 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
 from src.config import get_settings, setup_logging
-from src.domain.entities import ConversationHistory
-from src.interface_adapters.openai_client import OpenAIClient
-from src.use_cases.message_processing import MessageProcessor
+from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
+from src.infrastructure.ai.openai.client import OpenAIClient
+from src.infrastructure.persistence.memory.repository import InMemoryMessageRepository
 
 logger = logging.getLogger(__name__)
 
 
+async def handle_message_processing(
+    message: discord.Message,
+    message_processor: ProcessUserTurn,
+    bot: commands.Bot,
+    lock: asyncio.Lock,
+) -> None:
+    """Handle message processing for bot responses."""
+    channel_id = message.channel.id
+    async with lock:
+        try:
+            user_message = message.content
+
+            author_name = message.author.display_name
+            bot_name = bot.user.name if bot.user else "Bot"
+
+            logger.debug(f"Processing user message from {author_name}: {user_message}")
+
+            clean_message = re.sub(r"<@!?(\d+)>", "", user_message).strip()
+
+            if len(clean_message) > 500:
+                clean_message = clean_message[:500] + "..."
+
+            if not clean_message:
+                clean_message = "[attachment]"
+            async with message.channel.typing():
+                response = await asyncio.to_thread(
+                    message_processor.execute,
+                    channel_id,
+                    clean_message,
+                    author_name=author_name,
+                    bot_name=bot_name,
+                )
+
+            if response:
+                await message.channel.send(response)
+            else:
+                logger.warning("No response generated")
+
+        except Exception:
+            logger.exception(f"Error processing message for channel {channel_id}")
+            await message.channel.send("Error processing your message.")
+
+
 def setup_discord_bot() -> commands.Bot:
-    """Setup and configure the Discord bot with modern discord.py 2.0."""
+    """Setup and configure the Discord bot with Clean Architecture."""
     settings = get_settings()
 
     setup_logging(settings)
@@ -29,7 +75,7 @@ def setup_discord_bot() -> commands.Bot:
 
     bot = commands.Bot(command_prefix=commands.when_mentioned_or("*"), intents=intents)
 
-    history = ConversationHistory()
+    repo = InMemoryMessageRepository()
     openai_client = OpenAIClient(
         api_key=settings.OPENAI_API_KEY,
         base_url=settings.OPENAI_BASE_URL,
@@ -37,9 +83,19 @@ def setup_discord_bot() -> commands.Bot:
         max_tokens=settings.OPENAI_MAX_TOKENS,
         temperature=settings.OPENAI_TEMPERATURE,
     )
-    message_processor = MessageProcessor(history, openai_client)
+    ai_service = OpenAIServiceAdapter(openai_client)
 
-    logger.info("Discord bot initialized with OpenAI client")
+    message_processor = ProcessUserTurn(repo, ai_service)
+    clear_history_use_case = ClearChannelHistory(repo)
+
+    logger.info("Discord bot initialized with Clean Architecture")
+
+    channel_locks: dict[int, asyncio.Lock] = {}
+
+    def get_lock(channel_id: int) -> asyncio.Lock:
+        if channel_id not in channel_locks:
+            channel_locks[channel_id] = asyncio.Lock()
+        return channel_locks[channel_id]
 
     @bot.event
     async def on_ready() -> None:
@@ -65,7 +121,6 @@ def setup_discord_bot() -> commands.Bot:
             return
 
         should_respond = False
-
         if message.channel.type == discord.ChannelType.private:
             should_respond = True
             logger.info(f"Direct message from {message.author.name}")
@@ -84,7 +139,8 @@ def setup_discord_bot() -> commands.Bot:
         if not should_respond:
             return
 
-        await handle_message_processing(message, message_processor, settings)
+        lock = get_lock(message.channel.id)
+        await handle_message_processing(message, message_processor, bot, lock)
 
     @bot.tree.command(name="help", description="Show help information")
     async def help_command(interaction: discord.Interaction) -> None:
@@ -117,48 +173,19 @@ def setup_discord_bot() -> commands.Bot:
             await interaction.response.send_message("Error: Could not determine channel.")
             return
         channel_id = interaction.channel.id
-        history.clear_history(channel_id)
-        await interaction.response.send_message("Conversation history cleared!")
+        lock = get_lock(channel_id)
+        async with lock:
+            success = clear_history_use_case.execute(channel_id)
+        if success:
+            await interaction.response.send_message("Conversation history cleared!")
+        else:
+            await interaction.response.send_message("No conversation history to clear.")
 
     @bot.event
     async def on_error(event: str, *args: Any, **kwargs: Any) -> None:
         logger.error(f"Error in event {event}: {args}, {kwargs}")
 
     return bot
-
-
-async def handle_message_processing(
-    message: discord.Message, message_processor: MessageProcessor, _settings: Any
-) -> None:
-    """Handle message processing for bot responses."""
-    try:
-        channel = message.channel
-        channel_id = channel.id
-
-        user_message = message.content
-
-        logger.debug(f"Processing user message from {message.author.display_name}: {user_message}")
-
-        clean_message = user_message.replace(f"<@{message.author.id}>", "").strip()
-        clean_message = re.sub(r"<@!?(\d+)>", "", clean_message).strip()
-
-        if len(clean_message) > 500:
-            clean_message = clean_message[:500] + "..."
-
-        if not clean_message:
-            clean_message = "[attachment]"
-
-        async with channel.typing():
-            response = await message_processor.process_user_turn(channel_id, clean_message)
-
-        if response:
-            await channel.send(response)
-        else:
-            logger.warning("No response generated")
-
-    except Exception as e:
-        logger.error(f"Error processing message: {e}")
-        await message.channel.send(f"Error processing your message: {e}")
 
 
 async def main() -> None:
@@ -171,7 +198,3 @@ async def main() -> None:
         raise ValueError("DISCORD_TOKEN is required")
 
     await bot.start(settings.DISCORD_TOKEN)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

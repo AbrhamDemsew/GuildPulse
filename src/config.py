@@ -40,6 +40,15 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = Field(default="INFO", description="Logging level")
     DEBUG: bool = Field(default=False, description="Debug mode")
 
+    CHAT_SYSTEM_PROMPT: str = Field(
+        default=(
+            "Tu es un bot Discord amical, intelligent et utile. "
+            "Réponds de manière concise, claire et bienveillante. "
+            "Utilise le français si la conversation est en français."
+        ),
+        description="System prompt for chat completions",
+    )
+
     IMAGE_DESCRIPTION_MODEL: str = Field(
         default="gpt-4o-mini", description="Model for image description"
     )

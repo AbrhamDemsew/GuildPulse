@@ -3,7 +3,7 @@
 
 import asyncio
 
-from src.frameworks_drivers.discord_bot import main as discord_main
+from src.frameworks_drivers.discord import main as discord_main
 
 
 async def main() -> None:

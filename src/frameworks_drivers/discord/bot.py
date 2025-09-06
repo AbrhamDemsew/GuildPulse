@@ -8,6 +8,7 @@ from typing import Any
 import discord
 from discord import app_commands
 from discord.ext import commands
+from discord.ui import Button, View, button
 
 from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
 from src.config import get_settings, setup_logging
@@ -16,6 +17,52 @@ from src.infrastructure.ai.openai.client import OpenAIClient
 from src.infrastructure.persistence.memory.repository import InMemoryMessageRepository
 
 logger = logging.getLogger(__name__)
+
+
+class ConfirmClearView(View):
+    """View with confirm/cancel buttons for clearing channel history."""
+
+    def __init__(self, use_case: ClearChannelHistory, channel_id: int, author_id: int):
+        super().__init__(timeout=60)
+        self.use_case = use_case
+        self.channel_id = channel_id
+        self.author_id = author_id
+
+    @button(label="Confirm", style=discord.ButtonStyle.danger)
+    async def confirm_button(self, interaction: discord.Interaction, button: Button) -> None:
+        if interaction.user.id != self.author_id:
+            await interaction.response.send_message(
+                "You cannot confirm this action.", ephemeral=True
+            )
+            return
+        success = self.use_case.execute(self.channel_id)
+        if success:
+            await interaction.response.edit_message(
+                content="Conversation history cleared!", embed=None, view=None
+            )
+        else:
+            await interaction.response.edit_message(
+                content="No conversation history to clear.", embed=None, view=None
+            )
+        self.stop()
+
+    @button(label="Cancel", style=discord.ButtonStyle.secondary)
+    async def cancel_button(self, interaction: discord.Interaction, button: Button) -> None:
+        if interaction.user.id != self.author_id:
+            await interaction.response.send_message(
+                "You cannot cancel this action.", ephemeral=True
+            )
+            return
+        await interaction.response.edit_message(
+            content="Clearing cancelled.", embed=None, view=None
+        )
+        self.stop()
+
+    async def on_timeout(self) -> None:
+        if self.message:  # type: ignore[attr-defined]
+            for child in self.children:
+                child.disabled = True  # type: ignore[attr-defined]
+            await self.message.edit(view=self)  # type: ignore[attr-defined]
 
 
 async def handle_message_processing(
@@ -102,11 +149,9 @@ def setup_discord_bot() -> commands.Bot:
         if bot.user:
             logger.info(f"Logged in as {bot.user} (ID: {bot.user.id})")
             logger.info(f"Connected to {len(bot.guilds)} guild(s)")
-            try:
-                synced = await bot.tree.sync()
-                logger.info(f"Synced {len(synced)} application commands")
-            except Exception as e:
-                logger.error(f"Error syncing commands: {e}")
+            logger.info(
+                "Slash commands are synced via src/frameworks_drivers/discord/sync_commands.py"
+            )
         else:
             logger.warning("Bot user not initialized")
 
@@ -160,26 +205,51 @@ def setup_discord_bot() -> commands.Bot:
             inline=False,
         )
         embed.add_field(
+            name="/chat <query>",
+            value="Ask the bot a question via slash command",
+            inline=False,
+        )
+        embed.add_field(
             name="/clear",
             value="Clear conversation history (admin only)",
             inline=False,
         )
         await interaction.response.send_message(embed=embed)
 
-    @bot.tree.command(name="clear", description="Clear conversation history")
-    @app_commands.checks.has_permissions(manage_messages=True)
-    async def clear_history(interaction: discord.Interaction) -> None:
+    @bot.tree.command(name="chat", description="Ask the bot a question")
+    async def chat(interaction: discord.Interaction, query: str) -> None:
         if interaction.channel is None:
             await interaction.response.send_message("Error: Could not determine channel.")
             return
         channel_id = interaction.channel.id
         lock = get_lock(channel_id)
+        await interaction.response.defer(ephemeral=False)
         async with lock:
-            success = clear_history_use_case.execute(channel_id)
-        if success:
-            await interaction.response.send_message("Conversation history cleared!")
-        else:
-            await interaction.response.send_message("No conversation history to clear.")
+            response = await asyncio.to_thread(
+                message_processor.execute,
+                channel_id,
+                query,
+                author_name=interaction.user.name,
+                bot_name=bot.user.name if bot.user else "Bot",
+            )
+        await interaction.followup.send(response)
+
+    @bot.tree.command(name="clear", description="Clear conversation history")
+    @app_commands.checks.has_permissions(manage_messages=True)
+    async def clear(interaction: discord.Interaction) -> None:
+        if interaction.channel is None:
+            await interaction.response.send_message("Error: Could not determine channel.")
+            return
+        channel_id = interaction.channel.id
+        view = ConfirmClearView(clear_history_use_case, channel_id, interaction.user.id)
+        embed = discord.Embed(
+            title="Confirm Clear",
+            description=f"Are you sure you want to clear the conversation history in <#{channel_id}>?",
+            color=discord.Color.orange(),
+        )
+        msg = await interaction.response.send_message(embed=embed, view=view)
+        view.message = msg  # type: ignore[attr-defined]
+        await view.wait()
 
     @bot.event
     async def on_error(event: str, *args: Any, **kwargs: Any) -> None:

@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, Literal
+from typing import Any
 
 from openai import OpenAI
 
@@ -36,7 +36,7 @@ class OpenAIClient:
         try:
             self.logger.debug(f"Chat completion with messages: {messages}")
 
-            response_kwargs = {
+            response_kwargs: dict[str, Any] = {
                 "model": model or self.model,
                 "messages": messages,
                 "max_tokens": max_tokens or self.max_tokens,
@@ -109,19 +109,8 @@ class OpenAIClient:
         self,
         prompt: str,
         model: str | None = None,
-        size: Literal[
-            "auto",
-            "1024x1024",
-            "1536x1024",
-            "1024x1536",
-            "256x256",
-            "512x512",
-            "1792x1024",
-            "1024x1792",
-        ] = "1024x1024",
-        quality: Literal[
-            "standard", "hd", "low", "medium", "high", "auto"
-        ] = "standard",
+        size: str = "1024x1024",
+        quality: str = "standard",
     ) -> str:
         """Generate an image based on the given prompt."""
         try:

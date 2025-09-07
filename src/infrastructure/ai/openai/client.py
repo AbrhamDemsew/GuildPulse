@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any
+from typing import Any, Literal
 
 from openai import OpenAI
 
@@ -21,9 +21,7 @@ class OpenAIClient:
         self.max_tokens = max_tokens
         self.temperature = temperature
         self.logger = logging.getLogger(__name__)
-        self.logger.info(
-            f"OpenAI client initialized with model: {model}, base_url: {base_url}"
-        )
+        self.logger.info(f"OpenAI client initialized with model: {model}, base_url: {base_url}")
 
     def chat_completion(
         self,
@@ -109,8 +107,13 @@ class OpenAIClient:
         self,
         prompt: str,
         model: str | None = None,
-        size: str = "1024x1024",
-        quality: str = "standard",
+        size: Literal[
+            "auto", "1024x1024", "1536x1024", "1024x1536", "256x256",
+            "512x512", "1792x1024", "1024x1792"
+        ] = "1024x1024",
+        quality: Literal[
+            "standard", "hd", "low", "medium", "high", "auto"
+        ] = "standard",
     ) -> str:
         """Generate an image based on the given prompt."""
         try:

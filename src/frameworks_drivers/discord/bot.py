@@ -22,14 +22,18 @@ logger = logging.getLogger(__name__)
 class ConfirmClearView(View):
     """View with confirm/cancel buttons for clearing channel history."""
 
-    def __init__(self, use_case: ClearChannelHistory, channel_id: int, author_id: int):
+    def __init__(
+        self, use_case: ClearChannelHistory, channel_id: int, author_id: int
+    ):
         super().__init__(timeout=60)
         self.use_case = use_case
         self.channel_id = channel_id
         self.author_id = author_id
 
     @button(label="Confirm", style=discord.ButtonStyle.danger)
-    async def confirm_button(self, interaction: discord.Interaction, button: Button) -> None:
+    async def confirm_button(
+        self, interaction: discord.Interaction, _button: Button
+    ) -> None:
         if interaction.user.id != self.author_id:
             await interaction.response.send_message(
                 "You cannot confirm this action.", ephemeral=True
@@ -47,7 +51,9 @@ class ConfirmClearView(View):
         self.stop()
 
     @button(label="Cancel", style=discord.ButtonStyle.secondary)
-    async def cancel_button(self, interaction: discord.Interaction, button: Button) -> None:
+    async def cancel_button(
+        self, interaction: discord.Interaction, _button: Button
+    ) -> None:
         if interaction.user.id != self.author_id:
             await interaction.response.send_message(
                 "You cannot cancel this action.", ephemeral=True
@@ -172,7 +178,11 @@ def setup_discord_bot() -> commands.Bot:
         elif message.mentions and bot.user in message.mentions:
             should_respond = True
             logger.info(f"Mentioned by {message.author.name}")
-        elif message.reference and message.reference.message_id and message.reference.resolved:
+        elif (
+            message.reference
+            and message.reference.message_id
+            and message.reference.resolved
+        ):
             referenced_message = message.reference.resolved
             if (
                 isinstance(referenced_message, discord.Message)
@@ -219,7 +229,9 @@ def setup_discord_bot() -> commands.Bot:
     @bot.tree.command(name="chat", description="Ask the bot a question")
     async def chat(interaction: discord.Interaction, query: str) -> None:
         if interaction.channel is None:
-            await interaction.response.send_message("Error: Could not determine channel.")
+            await interaction.response.send_message(
+                "Error: Could not determine channel."
+            )
             return
         channel_id = interaction.channel.id
         lock = get_lock(channel_id)
@@ -234,11 +246,15 @@ def setup_discord_bot() -> commands.Bot:
             )
         await interaction.followup.send(response)
 
-    @bot.tree.command(name="clear", description="Clear conversation history")
+    @bot.tree.command(
+        name="clear", description="Clear conversation history"
+    )
     @app_commands.checks.has_permissions(manage_messages=True)
     async def clear(interaction: discord.Interaction) -> None:
         if interaction.channel is None:
-            await interaction.response.send_message("Error: Could not determine channel.")
+            await interaction.response.send_message(
+                "Error: Could not determine channel."
+            )
             return
         channel_id = interaction.channel.id
         view = ConfirmClearView(clear_history_use_case, channel_id, interaction.user.id)

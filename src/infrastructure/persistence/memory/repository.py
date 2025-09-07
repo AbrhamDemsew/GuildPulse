@@ -26,7 +26,3 @@ class InMemoryMessageRepository(MessageRepository):
         if channel_id not in self._channels:
             self._channels[channel_id] = Channel(channel_id=channel_id)
         return self._channels[channel_id]
-
-    def get_all_channels(self) -> list[int]:
-        """Get all channel IDs."""
-        return list(self._channels.keys())

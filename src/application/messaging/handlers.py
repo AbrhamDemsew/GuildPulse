@@ -10,10 +10,6 @@ from src.domain.repository import MessageRepository
 from src.domain.shared.errors import ChannelNotFoundError, DomainError
 
 
-class MessageProcessingError(Exception):
-    """Custom exception for message processing errors."""
-
-
 class ProcessUserTurn:
     """Use case to process a user turn and generate AI reply."""
 
@@ -46,7 +42,9 @@ class ProcessUserTurn:
             prefixed_user_content = f"{author_name}: {user_content}"
             assert channel is not None
             channel.add_message(
-                Message(role="user", content=MessageContent(value=prefixed_user_content))
+                Message(
+                    role="user", content=MessageContent(value=prefixed_user_content)
+                )
             )
 
             reply = self.ai_service.generate_reply(channel)
@@ -98,7 +96,9 @@ class ClearChannelHistory:
             channel.clear()
             self.repo.save(channel)
 
-            self.logger.info(f"Cleared conversation history for channel_id {channel_id}")
+            self.logger.info(
+                f"Cleared conversation history for channel_id {channel_id}"
+            )
 
             return True
 

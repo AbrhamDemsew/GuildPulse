@@ -136,20 +136,3 @@ def test_in_memory_repository_not_found():
     repo = InMemoryMessageRepository()
     with pytest.raises(ChannelNotFoundError):
         repo.get(999)
-
-
-def test_channel_id():
-    """Test ChannelId value object."""
-    from src.domain.channel.value_objects import ChannelId
-
-    channel_id = ChannelId(value=123)
-    assert int(channel_id) == 123
-
-
-def test_channel_id_validation():
-    """Test ChannelId validation."""
-    from src.domain.channel.value_objects import ChannelId
-    from src.domain.shared.errors import MessageValidationError
-
-    with pytest.raises(MessageValidationError):
-        ChannelId(value=-1)

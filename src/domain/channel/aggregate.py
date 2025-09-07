@@ -35,14 +35,6 @@ class Channel:
         """Clear all messages in the channel."""
         self.messages.clear()
 
-    def get_last_messages(self, n: int = 10) -> list[Message]:
-        """Get the last n messages."""
-        return self.messages[-n:] if len(self.messages) >= n else self.messages.copy()
-
     def count_messages(self) -> int:
         """Count the number of messages."""
         return len(self.messages)
-
-    def has_messages(self) -> bool:
-        """Check if the channel has any messages."""
-        return len(self.messages) > 0

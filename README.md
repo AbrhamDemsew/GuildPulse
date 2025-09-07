@@ -1,22 +1,22 @@
 # Discord Bot with OpenAI Integration
 
-A modern Discord bot built with Python 3.14, featuring OpenAI API integration for intelligent conversations. Production-ready with Docker support, comprehensive testing, and modern architecture.
+A modern Discord bot built with Python 3.13, featuring OpenAI API integration for intelligent conversations. Production-ready with Docker support, comprehensive testing, and clean architecture.
 
 ## 🚀 Features
 
-- **Intelligent Conversations**: Powered by OpenAI API (works with OpenAI, Ollama, or any OpenAI-compatible API)
+- **Intelligent Conversations**: Powered by OpenAI API
 - **Context-Aware Responses**: Maintains conversation history across channels
 - **Smart Mention Detection**: Only responds when mentioned, in DM, or replying to the bot
 - **Message Management**: Keeps track of the last 100 messages per channel
 - **Async Architecture**: Non-blocking operations for optimal performance
-- **Modern Stack**: Python 3.14, discord.py 2.0, Pydantic, standard logging
+- **Modern Stack**: Python 3.13, discord.py 2.0, Pydantic, standard logging
 - **Production Ready**: Docker support, health checks, comprehensive logging
 - **Well-Tested**: Complete test suite with pytest
 - **Clean Architecture**: Separated concerns for maintainability
 
 ## 📋 Prerequisites
 
-- Python 3.14 or higher
+- Python 3.13 or higher
 - Docker (optional, for containerized deployment)
 - Discord Bot Token
 - OpenAI API Key (or compatible API key)
@@ -105,8 +105,6 @@ docker-compose logs -f
 | `OPENAI_MODEL` | No | `gpt-4o-mini` | Default model name |
 | `OPENAI_MAX_TOKENS` | No | `500` | Maximum tokens for generation |
 | `OPENAI_TEMPERATURE` | No | `0.7` | Generation temperature |
-| `ENABLE_IMAGE_GENERATION` | No | `true` | Enable image generation |
-| `ENABLE_IMAGE_DESCRIPTION` | No | `true` | Enable image description |
 | `LOG_LEVEL` | No | `INFO` | Logging level |
 | `DEBUG` | No | `false` | Debug mode |
 
@@ -234,7 +232,7 @@ src/
 
 ### Code Style
 
-- **Language**: Python 3.14
+- **Language**: Python 3.13
 - **Formatter**: Black (80 character lines)
 - **Linter**: Flake8
 - **Type Checker**: Mypy
@@ -391,10 +389,9 @@ For issues, questions, or contributions, please open an issue on GitHub.
 - [ ] Admin dashboard and web interface
 - [ ] Plugin system for custom commands
 - [ ] Multi-language support (i18n)
-- [ ] Advanced image editing capabilities
 - [ ] Webhook support for external integrations
 - [ ] Metrics and observability (Prometheus, Grafana)
 
 ---
 
-**Built with ❤️ using Python 3.14, discord.py 2.0, and OpenAI API**
+**Built with ❤️ using Python 3.13, discord.py 2.0, and OpenAI API**

@@ -51,20 +51,3 @@ async def test_chat_completion_with_custom_params(mock_openai_client):
     mock_openai_client.client.chat.completions.create.assert_called_once_with(
         model="custom-model", messages=messages, max_tokens=200, temperature=0.8
     )
-
-
-def test_health_check(mock_openai_client):
-    """Test health check method."""
-    mock_client = mock_openai_client.client
-    mock_client.models.list = Mock(return_value=Mock())
-
-    assert mock_openai_client.health_check() is True
-    mock_client.models.list.assert_called_once()
-
-
-def test_health_check_failure(mock_openai_client):
-    """Test health check with failure."""
-    mock_client = mock_openai_client.client
-    mock_client.models.list = Mock(side_effect=Exception("API Error"))
-
-    assert mock_openai_client.health_check() is False

@@ -30,13 +30,6 @@ class Settings(BaseSettings):
         description="Temperature for generation",
     )
 
-    ENABLE_IMAGE_GENERATION: bool = Field(
-        default=True, description="Enable image generation feature"
-    )
-    ENABLE_IMAGE_DESCRIPTION: bool = Field(
-        default=True, description="Enable image description feature"
-    )
-
     LOG_LEVEL: str = Field(default="INFO", description="Logging level")
     DEBUG: bool = Field(default=False, description="Debug mode")
 
@@ -47,13 +40,6 @@ class Settings(BaseSettings):
             "Utilise le français si la conversation est en français."
         ),
         description="System prompt for chat completions",
-    )
-
-    IMAGE_DESCRIPTION_MODEL: str = Field(
-        default="gpt-4o-mini", description="Model for image description"
-    )
-    IMAGE_GENERATION_MODEL: str = Field(
-        default="dall-e-3", description="Model for image generation"
     )
 
     @field_validator("OPENAI_API_KEY")
@@ -87,8 +73,12 @@ def get_settings() -> Settings:
 
 def setup_logging(settings: Settings) -> None:
     """Configure logging with standard library."""
-    log_format = "%(asctime)s | %(levelname)s | %(name)s:%(funcName)s:%(lineno)d - %(message)s"
-    log_file = "logs/info.log" if settings.LOG_LEVEL.upper() != "DEBUG" else "logs/debug.log"
+    log_format = (
+        "%(asctime)s | %(levelname)s | %(name)s:%(funcName)s:%(lineno)d - %(message)s"
+    )
+    log_file = (
+        "logs/info.log" if settings.LOG_LEVEL.upper() != "DEBUG" else "logs/debug.log"
+    )
 
     if not os.path.exists("logs"):
         os.makedirs("logs")

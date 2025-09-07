@@ -1,6 +1,6 @@
 """Domain package."""
 
 from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import ChannelId, Message, MessageContent
+from src.domain.channel.value_objects import Message, MessageContent
 
-__all__ = ["Channel", "Message", "MessageContent", "ChannelId"]
+__all__ = ["Channel", "Message", "MessageContent"]

@@ -5,7 +5,7 @@ from datetime import datetime
 
 from src.domain.shared.errors import MessageValidationError
 
-__all__ = ["MessageContent", "Message", "ChannelId"]
+__all__ = ["MessageContent", "Message"]
 
 
 @dataclass(frozen=True)
@@ -19,7 +19,9 @@ class MessageContent:
         if not self.value:
             raise MessageValidationError("Message content cannot be empty")
         if len(self.value) > 10000:
-            raise MessageValidationError("Message content too long (max 10000 characters)")
+            raise MessageValidationError(
+                "Message content too long (max 10000 characters)"
+            )
 
     def __str__(self) -> str:
         return self.value
@@ -51,18 +53,3 @@ class Message:
             other.role,
             other.content.value,
         )
-
-
-@dataclass(frozen=True)
-class ChannelId:
-    """Value object representing a channel identifier."""
-
-    value: int
-
-    def __post_init__(self) -> None:
-        """Validate channel ID."""
-        if self.value < 0:
-            raise MessageValidationError("Channel ID must be positive")
-
-    def __int__(self) -> int:
-        return self.value

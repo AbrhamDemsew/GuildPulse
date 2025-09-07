@@ -22,9 +22,7 @@ logger = logging.getLogger(__name__)
 class ConfirmClearView(View):
     """View with confirm/cancel buttons for clearing channel history."""
 
-    def __init__(
-        self, use_case: ClearChannelHistory, channel_id: int, author_id: int
-    ):
+    def __init__(self, use_case: ClearChannelHistory, channel_id: int, author_id: int):
         super().__init__(timeout=60)
         self.use_case = use_case
         self.channel_id = channel_id
@@ -246,9 +244,7 @@ def setup_discord_bot() -> commands.Bot:
             )
         await interaction.followup.send(response)
 
-    @bot.tree.command(
-        name="clear", description="Clear conversation history"
-    )
+    @bot.tree.command(name="clear", description="Clear conversation history")
     @app_commands.checks.has_permissions(manage_messages=True)
     async def clear(interaction: discord.Interaction) -> None:
         if interaction.channel is None:

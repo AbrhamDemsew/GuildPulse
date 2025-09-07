@@ -44,8 +44,6 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies:
-          - types-requests
-          - types-beautifulsoup4
           - pydantic
         args: ['--ignore-missing-imports', '--no-error-summary']
 

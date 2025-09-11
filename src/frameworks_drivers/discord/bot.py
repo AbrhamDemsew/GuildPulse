@@ -11,9 +11,11 @@ from discord.ext import commands
 from discord.ui import Button, View, button
 
 from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
-from src.config import get_settings, setup_logging
+from src.config import setup_logging
 from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
 from src.infrastructure.ai.openai.client import OpenAIClient
+from src.infrastructure.config.adapter import ConfigAdapter
+from src.infrastructure.di.composition_root import CompositionRoot
 from src.infrastructure.persistence.memory.repository import InMemoryMessageRepository
 
 logger = logging.getLogger(__name__)
@@ -63,10 +65,10 @@ class ConfirmClearView(View):
         self.stop()
 
     async def on_timeout(self) -> None:
-        if self.message:  # type: ignore[attr-defined]
+        if self.message:
             for child in self.children:
-                child.disabled = True  # type: ignore[attr-defined]
-            await self.message.edit(view=self)  # type: ignore[attr-defined]
+                child.disabled = True
+            await self.message.edit(view=self)
 
 
 async def handle_message_processing(
@@ -86,10 +88,17 @@ async def handle_message_processing(
 
             logger.debug(f"Processing user message from {author_name}: {user_message}")
 
-            clean_message = re.sub(r"<@!?(\d+)>", "", user_message).strip()
+            clean_message = re.sub(r"<@!?\d+>", "", user_message).strip()
 
             if len(clean_message) > 500:
                 clean_message = clean_message[:500] + "..."
+
+            image_urls: tuple[str, ...] = tuple(
+                attachment.url
+                for attachment in message.attachments
+                if attachment.content_type
+                and attachment.content_type.startswith("image/")
+            )
 
             if not clean_message:
                 clean_message = "[attachment]"
@@ -100,6 +109,7 @@ async def handle_message_processing(
                     clean_message,
                     author_name=author_name,
                     bot_name=bot_name,
+                    image_urls=image_urls,
                 )
 
             if response:
@@ -114,10 +124,6 @@ async def handle_message_processing(
 
 def setup_discord_bot() -> commands.Bot:
     """Setup and configure the Discord bot with Clean Architecture."""
-    settings = get_settings()
-
-    setup_logging(settings)
-
     logger.info("Starting Discord bot initialization...")
 
     intents = discord.Intents.default()
@@ -126,20 +132,25 @@ def setup_discord_bot() -> commands.Bot:
 
     bot = commands.Bot(command_prefix=commands.when_mentioned_or("*"), intents=intents)
 
-    repo = InMemoryMessageRepository()
-    openai_client = OpenAIClient(
-        api_key=settings.OPENAI_API_KEY,
-        base_url=settings.OPENAI_BASE_URL,
-        model=settings.OPENAI_MODEL,
-        max_tokens=settings.OPENAI_MAX_TOKENS,
-        temperature=settings.OPENAI_TEMPERATURE,
-    )
-    ai_service = OpenAIServiceAdapter(openai_client)
+    # Get settings from environment and configure logging
+    from src.config import get_settings as get_config
+    
+    settings = get_config()
+    setup_logging(settings)
 
-    message_processor = ProcessUserTurn(repo, ai_service)
-    clear_history_use_case = ClearChannelHistory(repo)
+    logger.info("Initializing dependency injection composition root...")
 
-    logger.info("Discord bot initialized with Clean Architecture")
+    # Create config adapter from settings
+    config = ConfigAdapter(**settings.model_dump())
+    
+    # Create composition root
+    root = CompositionRoot(config)
+
+    # Get use cases from DI
+    message_processor = root.create_message_processor()
+    clear_history_use_case = root.create_clear_history_use_case()
+
+    logger.info("Discord bot initialized with Clean Architecture and DI")
 
     channel_locks: dict[int, asyncio.Lock] = {}
 
@@ -241,6 +252,7 @@ def setup_discord_bot() -> commands.Bot:
                 query,
                 author_name=interaction.user.name,
                 bot_name=bot.user.name if bot.user else "Bot",
+                image_urls=(),
             )
         await interaction.followup.send(response)
 
@@ -260,7 +272,7 @@ def setup_discord_bot() -> commands.Bot:
             color=discord.Color.orange(),
         )
         msg = await interaction.response.send_message(embed=embed, view=view)
-        view.message = msg  # type: ignore[attr-defined]
+        view.message = msg
         await view.wait()
 
     @bot.event
@@ -272,6 +284,8 @@ def setup_discord_bot() -> commands.Bot:
 
 async def main() -> None:
     """Main entry point for the Discord bot."""
+    from src.config import get_settings
+
     settings = get_settings()
     bot = setup_discord_bot()
 

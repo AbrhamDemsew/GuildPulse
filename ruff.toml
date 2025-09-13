@@ -1,0 +1,13 @@
+line-length = 100
+target-version = "py313"
+
+[lint]
+select = ["E", "W", "F", "I", "B", "C4", "UP", "ARG"]
+ignore = ["B008", "B014", "B904"]
+
+[lint.isort]
+known-first-party = ["src", "tests"]
+
+[format]
+quote-style = "double"
+indent-style = "space"

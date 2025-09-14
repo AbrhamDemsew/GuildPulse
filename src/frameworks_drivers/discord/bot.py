@@ -12,11 +12,8 @@ from discord.ui import Button, View, button
 
 from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
 from src.config import setup_logging
-from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
-from src.infrastructure.ai.openai.client import OpenAIClient
 from src.infrastructure.config.adapter import ConfigAdapter
 from src.infrastructure.di.composition_root import CompositionRoot
-from src.infrastructure.persistence.memory.repository import InMemoryMessageRepository
 
 logger = logging.getLogger(__name__)
 
@@ -24,16 +21,17 @@ logger = logging.getLogger(__name__)
 class ConfirmClearView(View):
     """View with confirm/cancel buttons for clearing channel history."""
 
-    def __init__(self, use_case: ClearChannelHistory, channel_id: int, author_id: int):
+    message: discord.Message | None
+    """The message associated with this view."""
+
+    def __init__(self, use_case: ClearChannelHistory, channel_id: int, author_id: int) -> None:
         super().__init__(timeout=60)
         self.use_case = use_case
         self.channel_id = channel_id
         self.author_id = author_id
 
     @button(label="Confirm", style=discord.ButtonStyle.danger)
-    async def confirm_button(
-        self, interaction: discord.Interaction, _button: Button
-    ) -> None:
+    async def confirm_button(self, interaction: discord.Interaction, _button: Button) -> None:
         if interaction.user.id != self.author_id:
             await interaction.response.send_message(
                 "You cannot confirm this action.", ephemeral=True
@@ -51,9 +49,7 @@ class ConfirmClearView(View):
         self.stop()
 
     @button(label="Cancel", style=discord.ButtonStyle.secondary)
-    async def cancel_button(
-        self, interaction: discord.Interaction, _button: Button
-    ) -> None:
+    async def cancel_button(self, interaction: discord.Interaction, _button: Button) -> None:
         if interaction.user.id != self.author_id:
             await interaction.response.send_message(
                 "You cannot cancel this action.", ephemeral=True
@@ -67,7 +63,8 @@ class ConfirmClearView(View):
     async def on_timeout(self) -> None:
         if self.message:
             for child in self.children:
-                child.disabled = True
+                assert hasattr(child, "disabled")
+                (child).disabled = True  # type: ignore
             await self.message.edit(view=self)
 
 
@@ -96,8 +93,7 @@ async def handle_message_processing(
             image_urls: tuple[str, ...] = tuple(
                 attachment.url
                 for attachment in message.attachments
-                if attachment.content_type
-                and attachment.content_type.startswith("image/")
+                if attachment.content_type and attachment.content_type.startswith("image/")
             )
 
             if not clean_message:
@@ -134,7 +130,7 @@ def setup_discord_bot() -> commands.Bot:
 
     # Get settings from environment and configure logging
     from src.config import get_settings as get_config
-    
+
     settings = get_config()
     setup_logging(settings)
 
@@ -142,7 +138,7 @@ def setup_discord_bot() -> commands.Bot:
 
     # Create config adapter from settings
     config = ConfigAdapter(**settings.model_dump())
-    
+
     # Create composition root
     root = CompositionRoot(config)
 
@@ -187,11 +183,7 @@ def setup_discord_bot() -> commands.Bot:
         elif message.mentions and bot.user in message.mentions:
             should_respond = True
             logger.info(f"Mentioned by {message.author.name}")
-        elif (
-            message.reference
-            and message.reference.message_id
-            and message.reference.resolved
-        ):
+        elif message.reference and message.reference.message_id and message.reference.resolved:
             referenced_message = message.reference.resolved
             if (
                 isinstance(referenced_message, discord.Message)
@@ -238,9 +230,7 @@ def setup_discord_bot() -> commands.Bot:
     @bot.tree.command(name="chat", description="Ask the bot a question")
     async def chat(interaction: discord.Interaction, query: str) -> None:
         if interaction.channel is None:
-            await interaction.response.send_message(
-                "Error: Could not determine channel."
-            )
+            await interaction.response.send_message("Error: Could not determine channel.")
             return
         channel_id = interaction.channel.id
         lock = get_lock(channel_id)
@@ -260,19 +250,18 @@ def setup_discord_bot() -> commands.Bot:
     @app_commands.checks.has_permissions(manage_messages=True)
     async def clear(interaction: discord.Interaction) -> None:
         if interaction.channel is None:
-            await interaction.response.send_message(
-                "Error: Could not determine channel."
-            )
+            await interaction.response.send_message("Error: Could not determine channel.")
             return
         channel_id = interaction.channel.id
         view = ConfirmClearView(clear_history_use_case, channel_id, interaction.user.id)
         embed = discord.Embed(
             title="Confirm Clear",
-            description=f"Are you sure you want to clear the conversation history in <#{channel_id}>?",
+            description=f"Are you sure you want to clear the conversation history in <#"
+            f"{channel_id}>?",
             color=discord.Color.orange(),
         )
         msg = await interaction.response.send_message(embed=embed, view=view)
-        view.message = msg
+        view.message = msg  # type: ignore
         await view.wait()
 
     @bot.event

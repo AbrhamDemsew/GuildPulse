@@ -31,6 +31,7 @@ class ProcessUserTurn:
         channel: Channel | None = None,
         author_name: str = "User",
         bot_name: str = "Bot",
+        image_urls: tuple[str, ...] = (),
     ) -> str:
         """Process user message and return AI reply."""
         try:
@@ -42,12 +43,10 @@ class ProcessUserTurn:
             prefixed_user_content = f"{author_name}: {user_content}"
             assert channel is not None
             channel.add_message(
-                Message(
-                    role="user", content=MessageContent(value=prefixed_user_content)
-                )
+                Message(role="user", content=MessageContent(value=prefixed_user_content))
             )
 
-            reply = self.ai_service.generate_reply(channel)
+            reply = self.ai_service.generate_reply(channel, image_urls)
 
             prefixed_reply = f"{bot_name}: {reply}"
             channel.add_message(
@@ -96,9 +95,7 @@ class ClearChannelHistory:
             channel.clear()
             self.repo.save(channel)
 
-            self.logger.info(
-                f"Cleared conversation history for channel_id {channel_id}"
-            )
+            self.logger.info(f"Cleared conversation history for channel_id {channel_id}")
 
             return True
 

@@ -3,8 +3,6 @@
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-import discord
-from discord.ext import commands
 
 from src.frameworks_drivers.discord.bot import (
     ConfirmClearView,

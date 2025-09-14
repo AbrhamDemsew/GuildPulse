@@ -19,6 +19,8 @@ class Channel:
 
     def add_message(self, message: Message) -> None:
         """Add a message to the channel."""
+        if self.max_messages <= 0:
+            return
         self.messages.append(message)
         if len(self.messages) > self.max_messages:
             self.messages = self.messages[-self.max_messages :]

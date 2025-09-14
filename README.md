@@ -5,6 +5,7 @@ A modern Discord bot built with Python 3.13, featuring OpenAI API integration fo
 ## 🚀 Features
 
 - **Intelligent Conversations**: Powered by OpenAI API
+- **Vision Support**: Analyze images attached to Discord messages
 - **Context-Aware Responses**: Maintains conversation history across channels
 - **Smart Mention Detection**: Only responds when mentioned, in DM, or replying to the bot
 - **Message Management**: Keeps track of the last 100 messages per channel
@@ -74,6 +75,8 @@ OPENAI_API_KEY="your-openai-api-key"
 OPENAI_BASE_URL="https://api.openai.com/v1"
 OPENAI_MODEL="gpt-4o-mini"
 OPENAI_MAX_TOKENS=500
+OPENAI_VISION_ENABLED=true
+OPENAI_VISION_MAX_IMAGES=4
 ```
 
 ### Docker Deployment
@@ -105,6 +108,8 @@ docker-compose logs -f
 | `OPENAI_MODEL` | No | `gpt-4o-mini` | Default model name |
 | `OPENAI_MAX_TOKENS` | No | `500` | Maximum tokens for generation |
 | `OPENAI_TEMPERATURE` | No | `0.7` | Generation temperature |
+| `OPENAI_VISION_ENABLED` | No | `true` | Enable image analysis support |
+| `OPENAI_VISION_MAX_IMAGES` | No | `4` | Maximum images per message |
 | `LOG_LEVEL` | No | `INFO` | Logging level |
 | `DEBUG` | No | `false` | Debug mode |
 
@@ -131,6 +136,25 @@ OPENAI_API_KEY="your-proxy-key"
 - **@bot**: Mention the bot to trigger a response
 - **\*help**: Show help information
 - **\*clear**: Clear conversation history (admin only)
+
+### Vision (Image) Support
+
+When you mention the bot or reply to its previous messages, it can now analyze images:
+
+1. Attach one or more images to your Discord message
+2. Add optional text with your question about the images
+3. The bot will analyze the images and respond accordingly
+
+Example:
+```
+User (@bot): Here's a screenshot of the error. What should I do?
+[Attachment: error.png]
+Bot: D'après l'image, il semble y avoir une exception non gérée...
+```
+
+You can configure vision support via environment variables:
+- `OPENAI_VISION_ENABLED=true` (enabled by default)
+- `OPENAI_VISION_MAX_IMAGES=4` (max 4 images per message)
 
 ### Example Usage
 

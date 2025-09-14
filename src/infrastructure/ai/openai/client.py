@@ -21,9 +21,7 @@ class OpenAIClient:
         self.max_tokens = max_tokens
         self.temperature = temperature
         self.logger = logging.getLogger(__name__)
-        self.logger.info(
-            f"OpenAI client initialized with model: {model}, base_url: {base_url}"
-        )
+        self.logger.info(f"OpenAI client initialized with model: {model}, base_url: {base_url}")
 
     def chat_completion(
         self,
@@ -43,9 +41,7 @@ class OpenAIClient:
                 "temperature": temperature or self.temperature,
             }
             if "thinking" in (model or self.model).lower():
-                response_kwargs["extra_body"] = {
-                    "chat_template_kwargs": {"enable_thinking": False}
-                }
+                response_kwargs["extra_body"] = {"chat_template_kwargs": {"enable_thinking": False}}
 
             response = self.client.chat.completions.create(**response_kwargs)
 
@@ -61,7 +57,7 @@ class OpenAIClient:
 
     async def chat_completion_async(
         self,
-        messages: list[dict[str, str]],
+        messages: list[dict[str, Any]],
         model: str | None = None,
         max_tokens: int | None = None,
         temperature: float | None = None,

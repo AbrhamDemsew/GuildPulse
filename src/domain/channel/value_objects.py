@@ -19,9 +19,7 @@ class MessageContent:
         if not self.value:
             raise MessageValidationError("Message content cannot be empty")
         if len(self.value) > 10000:
-            raise MessageValidationError(
-                "Message content too long (max 10000 characters)"
-            )
+            raise MessageValidationError("Message content too long (max 10000 characters)")
 
     def __str__(self) -> str:
         return self.value

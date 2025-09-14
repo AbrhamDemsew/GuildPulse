@@ -39,9 +39,7 @@ async def main() -> None:
             synced = await bot.tree.sync(guild=guild)
             print(f"Synced {len(synced)} guild command(s) for guild {guild_id}")
         else:
-            print(
-                "DISCORD_DEV_GUILD_ID not set. Use DISCORD_SYNC_GLOBAL=true for global commands"
-            )
+            print("DISCORD_DEV_GUILD_ID not set. Use DISCORD_SYNC_GLOBAL=true for global commands")
     await bot.close()
     print("Commands synced successfully")
 

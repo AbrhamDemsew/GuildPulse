@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     @field_validator("OPENAI_API_KEY")
     @classmethod
     def validate_api_key(cls, v: str) -> str:
-        if not v and not cls.model_config.get("env_file"):
+        if not v:
             raise ValueError("OPENAI_API_KEY is required")
         return v
 
@@ -73,12 +73,8 @@ def get_settings() -> Settings:
 
 def setup_logging(settings: Settings) -> None:
     """Configure logging with standard library."""
-    log_format = (
-        "%(asctime)s | %(levelname)s | %(name)s:%(funcName)s:%(lineno)d - %(message)s"
-    )
-    log_file = (
-        "logs/info.log" if settings.LOG_LEVEL.upper() != "DEBUG" else "logs/debug.log"
-    )
+    log_format = "%(asctime)s | %(levelname)s | %(name)s:%(funcName)s:%(lineno)d - %(message)s"
+    log_file = "logs/info.log" if settings.LOG_LEVEL.upper() != "DEBUG" else "logs/debug.log"
 
     if not os.path.exists("logs"):
         os.makedirs("logs")

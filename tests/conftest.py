@@ -1,14 +1,14 @@
 """Test configuration and fixtures."""
 
-import os
 from unittest import mock
 
 import pytest
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(scope="session")
 def test_environment():
     """Set up clean test environment variables."""
+
     env_vars = {
         "DISCORD_TOKEN": "test-token",
         "OPENAI_API_KEY": "test-key",
@@ -21,22 +21,22 @@ def test_environment():
         "CHAT_SYSTEM_PROMPT": "Test prompt",
     }
 
-    with mock.patch.dict(os.environ, env_vars, clear=True):
+    with mock.patch.dict("os.environ", env_vars, clear=True):
         yield
 
 
 @pytest.fixture
 def mock_openai_client():
-    """Create a mock OpenAI client."""
+    """Create a mock OpenAI client with spec for better type checking."""
     from src.infrastructure.ai.openai.client import OpenAIClient
 
-    return mock.Mock(spec=OpenAIClient)
+    mock_client = mock.Mock(spec=OpenAIClient)
+    return mock_client
 
 
 @pytest.fixture
 def mock_channel():
-    """Create a mock channel."""
-
+    """Create a mock channel with one user message."""
     from src.domain.channel.aggregate import Channel
     from src.domain.channel.value_objects import Message, MessageContent
 
@@ -63,3 +63,27 @@ def process_user_turn(mock_ai_adapter):
 
     repo = InMemoryMessageRepository()
     return ProcessUserTurn(repo, mock_ai_adapter)
+
+
+@pytest.fixture
+def clear_channel_history():
+    """Create a ClearChannelHistory instance."""
+    from src.application.messaging.handlers import ClearChannelHistory
+    from src.infrastructure.persistence.memory.repository import (
+        InMemoryMessageRepository,
+    )
+
+    repo = InMemoryMessageRepository()
+    return ClearChannelHistory(repo)
+
+
+@pytest.fixture
+def sample_channel():
+    """Create a sample channel with messages."""
+    from src.domain.channel.aggregate import Channel
+    from src.domain.channel.value_objects import Message, MessageContent
+
+    channel = Channel(channel_id=999, max_messages=3)
+    channel.add_message(Message(role="user", content=MessageContent(value="First")))
+    channel.add_message(Message(role="assistant", content=MessageContent(value="Second")))
+    return channel

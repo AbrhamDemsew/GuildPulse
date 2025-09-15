@@ -3,6 +3,7 @@ import logging
 from typing import Any
 
 from openai import OpenAI
+from openai.types.chat import ChatCompletion
 
 
 class OpenAIClient:
@@ -43,9 +44,10 @@ class OpenAIClient:
             if "thinking" in (model or self.model).lower():
                 response_kwargs["extra_body"] = {"chat_template_kwargs": {"enable_thinking": False}}
 
-            response = self.client.chat.completions.create(**response_kwargs)
+            response: ChatCompletion = self.client.chat.completions.create(**response_kwargs)
 
-            content = response.choices[0].message.content
+            message = response.choices[0].message
+            content = message.content
             if content is None:
                 raise ValueError("No content returned from chat completion")
             self.logger.debug(f"Chat completion response: {content}")

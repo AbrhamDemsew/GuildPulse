@@ -84,7 +84,7 @@ class ClearChannelHistory:
             self.logger.debug(f"Clearing history for channel_id {channel_id}")
 
             channel = self.repo.get(channel_id)
-            if channel is None:
+            if not channel:
                 self.logger.warning(f"Channel not found for channel_id {channel_id}")
                 return False
 

@@ -20,7 +20,7 @@ dev = [
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.1.0",
     "ruff>=0.1.0",
-    "mypy>=1.4.0",
+    "basedpyright>=1.1.0",
     "black>=23.0.0",
 ]
 
@@ -28,12 +28,6 @@ dev = [
 line-length = 100
 target-version = ['py313']
 skip-string-normalization = true
-
-[tool.pyright]
-pythonVersion = "3.13"
-typeCheckingMode = "strict"
-include = ["src", "tests"]
-exclude = [".venv", "**/__pycache__"]
 
 [tool.ruff]
 line-length = 100
@@ -56,3 +50,14 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 asyncio_mode = "auto"
+
+[tool.basedpyright]
+include = ["src", "tests"]
+exclude = [".venv", "**/__pycache__"]
+pythonVersion = "3.13"
+typeCheckingMode = "strict"
+reportMissingTypeArgument = "warning"
+reportUnknownParameterType = "warning"
+reportUnusedFunction = "warning"
+reportUnknownMemberType = "warning"
+reportUnknownVariableType = "warning"

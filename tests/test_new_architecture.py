@@ -17,6 +17,7 @@ def mock_ai_service():
     """Create a mock AI service."""
     mock = Mock(spec=OpenAIServiceAdapter)
     mock.generate_reply.return_value = "Test response"
+    mock.generate_reply.return_value = "Test response"
     return mock
 
 

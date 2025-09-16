@@ -2,10 +2,19 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
 
 from src.domain.shared.errors import MessageValidationError
 
-__all__ = ["MessageContent", "Message"]
+__all__ = ["MessageContent", "Message", "MessageRole"]
+
+
+class MessageRole(Enum):
+    """Enum for message roles."""
+
+    USER = "user"
+    ASSISTANT = "assistant"
+    SYSTEM = "system"
 
 
 @dataclass(frozen=True)
@@ -23,6 +32,8 @@ class MessageContent:
 
     def __str__(self) -> str:
         return self.value
+
+
 
 
 @dataclass(frozen=True)

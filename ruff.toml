@@ -1,13 +1,18 @@
 line-length = 100
 target-version = "py313"
-
-[lint]
-select = ["E", "W", "F", "I", "B", "C4", "UP", "ARG"]
-ignore = ["B008", "B014", "B904"]
-
-[lint.isort]
-known-first-party = ["src", "tests"]
+extend-include = ["src/**/*.py", "tests/**/*.py", "docs/**/*.py"]
 
 [format]
 quote-style = "double"
-indent-style = "space"
+
+[lint]
+ignore = [
+    "E501",  # Line too long (we allow 100 chars, but some lines are intentional longer)
+]
+
+[lint.per-file-ignores]
+"tests/**/*.py" = [
+    "F841",  # Unused variable (tests often assign to variables for verification)
+    "ARG002",  # Unused method arguments (test fixtures)
+    "B017",  # Assert against exception classes (pytest.raises(Exception))
+]

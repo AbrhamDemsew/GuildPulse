@@ -1,9 +1,11 @@
 """Tests for in-memory repository."""
 
+from src.domain.channel.aggregate import Channel
+from src.domain.channel.value_objects import Message, MessageContent
+from src.domain.shared.errors import ChannelNotFoundError
+
 import pytest
 
-from src.domain.channel.aggregate import Channel
-from src.domain.shared.errors import ChannelNotFoundError
 from src.infrastructure.persistence.memory.repository import InMemoryMessageRepository
 
 
@@ -116,7 +118,8 @@ class TestRepositoryEdgeCases:
 
         for i in range(10):
             channel = repo.get_or_create(i)
-            channel.add_message(None)
+            message = Message(role="user", content=MessageContent(value="Test"))
+            channel.add_message(message)
 
         for i in range(10):
             retrieved = repo.get(i)

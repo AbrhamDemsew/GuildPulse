@@ -3,7 +3,7 @@ import logging
 from typing import Any
 
 from openai import OpenAI
-from openai.types.chat import ChatCompletion
+from openai.types.chat import ChatCompletion, ChatCompletionMessage
 
 
 class OpenAIClient:
@@ -46,9 +46,9 @@ class OpenAIClient:
 
             response: ChatCompletion = self.client.chat.completions.create(**response_kwargs)
 
-            message = response.choices[0].message
-            content = message.content
-            if content is None:
+            message: ChatCompletionMessage = response.choices[0].message
+            content: str = message.content or ""
+            if not content:
                 raise ValueError("No content returned from chat completion")
             self.logger.debug(f"Chat completion response: {content}")
             return content

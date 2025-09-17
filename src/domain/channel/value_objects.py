@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from typing import Optional
 
 from src.domain.shared.errors import MessageValidationError
 
@@ -21,16 +22,20 @@ class MessageRole(Enum):
 class MessageContent:
     """Value object representing the content of a message."""
 
-    value: str
+    value: Optional[str] = None
 
     def __post_init__(self) -> None:
         """Validate message content."""
-        if not self.value:
+        if self.value is None:
+            raise MessageValidationError("Message content cannot be None")
+        if self.value == "":
             raise MessageValidationError("Message content cannot be empty")
         if len(self.value) > 10000:
             raise MessageValidationError("Message content too long (max 10000 characters)")
 
     def __str__(self) -> str:
+        if self.value is None:
+            return ""
         return self.value
 
 
@@ -52,7 +57,8 @@ class Message:
 
     def to_dict(self) -> dict[str, str]:
         """Convert message to dictionary."""
-        return {"role": self.role, "content": self.content.value}
+        content = self.content.value or ""
+        return {"role": self.role, "content": content}
 
     def __eq__(self, other: object) -> bool:
         """Compare messages by value (not identity)."""

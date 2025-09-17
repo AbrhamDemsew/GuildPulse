@@ -43,6 +43,7 @@ class TestProcessUserTurn:
 
         messages = repo.get(999).get_messages()
         assert messages[-2].role == "user"
+        assert messages[-2].content.value is not None
         assert "Test message" in messages[-2].content.value
 
     def test_process_user_turn_adds_bot_message(self, mock_ai_adapter, sample_channel):
@@ -55,6 +56,7 @@ class TestProcessUserTurn:
 
         messages = repo.get(999).get_messages()
         assert messages[-1].role == "assistant"
+        assert messages[-1].content.value is not None
         assert "Test response" in messages[-1].content.value
 
     def test_process_user_turn_with_custom_names(self, mock_ai_adapter):
@@ -70,7 +72,9 @@ class TestProcessUserTurn:
         )
 
         messages = repo.get(123).get_messages()
+        assert messages[0].content.value is not None
         assert "Alice:" in messages[0].content.value
+        assert messages[1].content.value is not None
         assert "Bob:" in messages[1].content.value
 
     def test_process_user_turn_with_image_urls(self, mock_ai_adapter):

@@ -39,8 +39,6 @@ class MessageContent:
         return self.value
 
 
-
-
 @dataclass(frozen=True)
 class Message:
     """Value object representing a message in a conversation."""

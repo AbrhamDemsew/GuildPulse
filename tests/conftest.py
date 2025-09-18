@@ -53,8 +53,6 @@ def mock_ai_adapter():
     return adapter
 
 
-
-
 @pytest.fixture
 def process_user_turn(mock_ai_adapter):
     """Create a ProcessUserTurn instance."""

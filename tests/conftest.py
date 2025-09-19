@@ -1,5 +1,7 @@
 """Test configuration and fixtures."""
 
+from typing import Any
+
 from unittest import mock
 
 import pytest
@@ -46,7 +48,7 @@ def mock_channel():
 
 
 @pytest.fixture
-def mock_ai_adapter():
+def mock_ai_adapter() -> mock.Mock:
     """Create a mock AI service adapter."""
     adapter = mock.Mock()
     adapter.generate_reply.return_value = "Test response"
@@ -54,7 +56,7 @@ def mock_ai_adapter():
 
 
 @pytest.fixture
-def process_user_turn(mock_ai_adapter):
+def process_user_turn(mock_ai_adapter: mock.Mock) -> Any:
     """Create a ProcessUserTurn instance."""
     from src.application.messaging.handlers import ProcessUserTurn
     from src.infrastructure.persistence.memory.repository import (
@@ -66,7 +68,7 @@ def process_user_turn(mock_ai_adapter):
 
 
 @pytest.fixture
-def clear_channel_history():
+def clear_channel_history() -> Any:
     """Create a ClearChannelHistory instance."""
     from src.application.messaging.handlers import ClearChannelHistory
     from src.infrastructure.persistence.memory.repository import (
@@ -78,7 +80,7 @@ def clear_channel_history():
 
 
 @pytest.fixture
-def sample_channel():
+def sample_channel() -> Any:
     """Create a sample channel with messages."""
     from src.domain.channel.aggregate import Channel
     from src.domain.channel.value_objects import Message, MessageContent

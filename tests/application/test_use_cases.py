@@ -1,5 +1,6 @@
 """Tests for application use cases."""
 
+from unittest import mock
 from unittest.mock import Mock, patch
 
 from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
@@ -12,7 +13,7 @@ from src.infrastructure.persistence.memory.repository import InMemoryMessageRepo
 class TestProcessUserTurn:
     """Tests for ProcessUserTurn use case."""
 
-    def test_process_user_turn_creates_channel(self, mock_ai_adapter):
+    def test_process_user_turn_creates_channel(self, mock_ai_adapter: mock.Mock):
         """Test that ProcessUserTurn creates channel if not exists."""
         repo = InMemoryMessageRepository()
         processor = ProcessUserTurn(repo, mock_ai_adapter)
@@ -22,7 +23,9 @@ class TestProcessUserTurn:
         assert result == "Test response"
         assert repo.get(123).count_messages() == 2
 
-    def test_process_user_turn_with_existing_channel(self, mock_ai_adapter, sample_channel):
+    def test_process_user_turn_with_existing_channel(
+        self, mock_ai_adapter: mock.Mock, sample_channel: mock.Mock
+    ):
         """Test ProcessUserTurn with an existing channel."""
         repo = InMemoryMessageRepository()
         repo.save(sample_channel)
@@ -33,7 +36,9 @@ class TestProcessUserTurn:
         assert result == "Test response"
         assert repo.get(999).count_messages() == 3
 
-    def test_process_user_turn_adds_user_message(self, mock_ai_adapter, sample_channel):
+    def test_process_user_turn_adds_user_message(
+        self, mock_ai_adapter: mock.Mock, sample_channel: mock.Mock
+    ):
         """Test that user message is added correctly."""
         repo = InMemoryMessageRepository()
         repo.save(sample_channel)
@@ -46,7 +51,9 @@ class TestProcessUserTurn:
         assert messages[-2].content.value is not None
         assert "Test message" in messages[-2].content.value
 
-    def test_process_user_turn_adds_bot_message(self, mock_ai_adapter, sample_channel):
+    def test_process_user_turn_adds_bot_message(
+        self, mock_ai_adapter: mock.Mock, sample_channel: mock.Mock
+    ):
         """Test that bot message is added correctly."""
         repo = InMemoryMessageRepository()
         repo.save(sample_channel)

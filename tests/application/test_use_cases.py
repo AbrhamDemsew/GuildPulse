@@ -1,5 +1,7 @@
 """Tests for application use cases."""
 
+from typing import Any
+
 from unittest import mock
 from unittest.mock import Mock, patch
 
@@ -66,12 +68,14 @@ class TestProcessUserTurn:
         assert messages[-1].content.value is not None
         assert "Test response" in messages[-1].content.value
 
-    def test_process_user_turn_with_custom_names(self, mock_ai_adapter):
+    def test_process_user_turn_with_custom_names(
+        self, mock_ai_adapter: mock.Mock
+    ):
         """Test ProcessUserTurn with custom author and bot names."""
         repo = InMemoryMessageRepository()
         processor = ProcessUserTurn(repo, mock_ai_adapter)
 
-        result = processor.execute(
+        processor.execute(
             channel_id=123,
             user_content="Hello",
             author_name="Alice",
@@ -84,7 +88,9 @@ class TestProcessUserTurn:
         assert messages[1].content.value is not None
         assert "Bob:" in messages[1].content.value
 
-    def test_process_user_turn_with_image_urls(self, mock_ai_adapter):
+    def test_process_user_turn_with_image_urls(
+        self, mock_ai_adapter: mock.Mock
+    ):
         """Test ProcessUserTurn with image URLs."""
         repo = InMemoryMessageRepository()
         processor = ProcessUserTurn(repo, mock_ai_adapter)
@@ -100,7 +106,7 @@ class TestProcessUserTurn:
     def test_process_user_turn_channel_not_found(self):
         """Test ProcessUserTurn when channel not found (should not raise)."""
         repo = InMemoryMessageRepository()
-        mock_adapter = Mock()
+        mock_adapter = Mock()  # type: ignore[assignment]
         mock_adapter.generate_reply.side_effect = ChannelNotFoundError("test")
         processor = ProcessUserTurn(repo, mock_adapter)
 
@@ -130,7 +136,7 @@ class TestProcessUserTurn:
 
         assert "unexpected error" in result.lower()
 
-    def test_process_user_turn_logging(self, mock_ai_adapter):
+    def test_process_user_turn_logging(self, mock_ai_adapter: mock.Mock):
         """Test that ProcessUserTurn logs correctly."""
         repo = InMemoryMessageRepository()
         processor = ProcessUserTurn(repo, mock_ai_adapter)
@@ -145,7 +151,9 @@ class TestProcessUserTurn:
 class TestProcessUserTurnEdgeCases:
     """Tests for edge cases in ProcessUserTurn."""
 
-    def test_process_user_turn_with_empty_content(self, mock_ai_adapter):
+    def test_process_user_turn_with_empty_content(
+        self, mock_ai_adapter: mock.Mock
+    ):
         """Test ProcessUserTurn with empty user content."""
         repo = InMemoryMessageRepository()
         processor = ProcessUserTurn(repo, mock_ai_adapter)
@@ -154,7 +162,9 @@ class TestProcessUserTurnEdgeCases:
 
         assert result == "Test response"
 
-    def test_process_user_turn_with_very_long_content(self, mock_ai_adapter):
+    def test_process_user_turn_with_very_long_content(
+        self, mock_ai_adapter: mock.Mock
+    ):
         """Test ProcessUserTurn with very long content."""
         repo = InMemoryMessageRepository()
         processor = ProcessUserTurn(repo, mock_ai_adapter)
@@ -164,7 +174,9 @@ class TestProcessUserTurnEdgeCases:
 
         assert "An error occurred" in result
 
-    def test_process_user_turn_passes_channel_explicitly(self, mock_ai_adapter, sample_channel):
+    def test_process_user_turn_passes_channel_explicitly(
+        self, mock_ai_adapter: mock.Mock, sample_channel: Any
+    ):
         """Test ProcessUserTurn with channel passed explicitly."""
         repo = InMemoryMessageRepository()
         processor = ProcessUserTurn(repo, mock_ai_adapter)
@@ -182,7 +194,7 @@ class TestProcessUserTurnEdgeCases:
 class TestClearChannelHistory:
     """Tests for ClearChannelHistory use case."""
 
-    def test_clear_channel_history_success(self, sample_channel):
+    def test_clear_channel_history_success(self, sample_channel: Any):
         """Test clearing channel history successfully."""
         repo = InMemoryMessageRepository()
         repo.save(sample_channel)
@@ -248,7 +260,7 @@ class TestUseCaseIntegration:
     def test_full_workflow(self):
         """Test complete workflow: user message -> AI response -> clear."""
         repo = InMemoryMessageRepository()
-        mock_adapter = Mock()
+        mock_adapter: Any = Mock()
         mock_adapter.generate_reply.return_value = "AI response"
         processor = ProcessUserTurn(repo, mock_adapter)
         clear_use_case = ClearChannelHistory(repo)

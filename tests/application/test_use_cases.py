@@ -68,9 +68,7 @@ class TestProcessUserTurn:
         assert messages[-1].content.value is not None
         assert "Test response" in messages[-1].content.value
 
-    def test_process_user_turn_with_custom_names(
-        self, mock_ai_adapter: mock.Mock
-    ):
+    def test_process_user_turn_with_custom_names(self, mock_ai_adapter: mock.Mock):
         """Test ProcessUserTurn with custom author and bot names."""
         repo = InMemoryMessageRepository()
         processor = ProcessUserTurn(repo, mock_ai_adapter)
@@ -88,9 +86,7 @@ class TestProcessUserTurn:
         assert messages[1].content.value is not None
         assert "Bob:" in messages[1].content.value
 
-    def test_process_user_turn_with_image_urls(
-        self, mock_ai_adapter: mock.Mock
-    ):
+    def test_process_user_turn_with_image_urls(self, mock_ai_adapter: mock.Mock):
         """Test ProcessUserTurn with image URLs."""
         repo = InMemoryMessageRepository()
         processor = ProcessUserTurn(repo, mock_ai_adapter)
@@ -151,9 +147,7 @@ class TestProcessUserTurn:
 class TestProcessUserTurnEdgeCases:
     """Tests for edge cases in ProcessUserTurn."""
 
-    def test_process_user_turn_with_empty_content(
-        self, mock_ai_adapter: mock.Mock
-    ):
+    def test_process_user_turn_with_empty_content(self, mock_ai_adapter: mock.Mock):
         """Test ProcessUserTurn with empty user content."""
         repo = InMemoryMessageRepository()
         processor = ProcessUserTurn(repo, mock_ai_adapter)
@@ -162,9 +156,7 @@ class TestProcessUserTurnEdgeCases:
 
         assert result == "Test response"
 
-    def test_process_user_turn_with_very_long_content(
-        self, mock_ai_adapter: mock.Mock
-    ):
+    def test_process_user_turn_with_very_long_content(self, mock_ai_adapter: mock.Mock):
         """Test ProcessUserTurn with very long content."""
         repo = InMemoryMessageRepository()
         processor = ProcessUserTurn(repo, mock_ai_adapter)

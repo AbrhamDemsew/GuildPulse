@@ -1,5 +1,7 @@
 """Tests for configuration management."""
 
+from typing import Any
+
 import os
 from unittest.mock import patch
 
@@ -222,7 +224,7 @@ class TestSetupLogging:
             os.chdir(original_cwd)
             shutil.rmtree(temp_dir, ignore_errors=True)
 
-    def test_setup_logging_debug_mode(self, tmp_path):
+    def test_setup_logging_debug_mode(self, tmp_path: Any) -> None:
         """Test logging setup in debug mode."""
         settings = Settings(
             OPENAI_API_KEY="test-key",
@@ -231,7 +233,7 @@ class TestSetupLogging:
 
         setup_logging(settings)
 
-    def test_setup_logging_info_mode(self, tmp_path):
+    def test_setup_logging_info_mode(self, tmp_path: Any) -> None:
         """Test logging setup in info mode."""
         settings = Settings(
             OPENAI_API_KEY="test-key",
@@ -240,7 +242,7 @@ class TestSetupLogging:
 
         setup_logging(settings)
 
-    def test_setup_logging_error_mode(self, tmp_path):
+    def test_setup_logging_error_mode(self, tmp_path: Any) -> None:
         """Test logging setup in error mode."""
         settings = Settings(
             OPENAI_API_KEY="test-key",
@@ -249,7 +251,7 @@ class TestSetupLogging:
 
         setup_logging(settings)
 
-    def test_setup_logging_format(self, tmp_path):
+    def test_setup_logging_format(self, tmp_path: Any) -> None:
         """Test that logging uses correct format."""
         settings = Settings(
             OPENAI_API_KEY="test-key",

@@ -1,5 +1,6 @@
 """Comprehensive tests for the new Clean Architecture."""
 
+
 from unittest.mock import Mock
 
 import pytest
@@ -13,7 +14,7 @@ from src.infrastructure.persistence.memory.repository import InMemoryMessageRepo
 
 
 @pytest.fixture
-def mock_ai_service():
+def mock_ai_service() -> Mock:
     """Create a mock AI service."""
     mock = Mock(spec=OpenAIServiceAdapter)
     mock.generate_reply.return_value = "Test response"

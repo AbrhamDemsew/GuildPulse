@@ -31,7 +31,9 @@ class ConfirmClearView(View):
         self.author_id = author_id
 
     @button(label="Confirm", style=discord.ButtonStyle.danger)
-    async def confirm_button(self, interaction: discord.Interaction, _button: Button) -> None:
+    async def confirm_button(
+        self, interaction: discord.Interaction, _button: Button[discord.ui.View]
+    ) -> None:
         if interaction.user.id != self.author_id:
             await interaction.response.send_message(
                 "You cannot confirm this action.", ephemeral=True
@@ -49,7 +51,9 @@ class ConfirmClearView(View):
         self.stop()
 
     @button(label="Cancel", style=discord.ButtonStyle.secondary)
-    async def cancel_button(self, interaction: discord.Interaction, _button: Button) -> None:
+    async def cancel_button(
+        self, interaction: discord.Interaction, _button: Button[discord.ui.View]
+    ) -> None:
         if interaction.user.id != self.author_id:
             await interaction.response.send_message(
                 "You cannot cancel this action.", ephemeral=True

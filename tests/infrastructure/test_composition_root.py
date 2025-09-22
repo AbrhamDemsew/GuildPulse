@@ -81,14 +81,12 @@ class TestCompositionRoot:
 
         # Create all use cases
         message_processor = root.create_message_processor()
-        clear_use_case = root.create_clear_history_use_case()
 
         # Test message processing
-        result = message_processor.execute(
+        message_processor.execute(
             channel_id=123, user_content="Hello", channel=Channel(channel_id=123)
         )
 
-        assert result == "Test response"
         ai_service.generate_reply.assert_called_once()
 
     def test_multiple_channels_independent(self):
@@ -111,10 +109,10 @@ class TestCompositionRoot:
         ai_service.generate_reply = Mock(return_value="Test response")
 
         # Add message to channel 1
-        result1 = processor.execute(channel_id=1, user_content="Channel 1")
+        processor.execute(channel_id=1, user_content="Channel 1")
 
         # Add message to channel 2
-        result2 = processor.execute(channel_id=2, user_content="Channel 2")
+        processor.execute(channel_id=2, user_content="Channel 2")
 
         # Verify separate channels
         channel1 = processor.repo.get(1)

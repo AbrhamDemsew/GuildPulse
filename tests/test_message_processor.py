@@ -1,5 +1,7 @@
 """Tests for message processor (legacy tests, kept for reference)."""
 
+from typing import Any
+
 from unittest.mock import Mock, patch
 
 import pytest
@@ -34,7 +36,7 @@ def mock_client():
 
 
 @pytest.fixture
-def message_processor():
+def message_processor() -> Any:
     """Create a message processor with mock client."""
     from src.infrastructure.ai.openai.client import OpenAIClient
 
@@ -60,14 +62,14 @@ def message_processor():
 
 
 @pytest.mark.asyncio
-async def test_generate_reply(message_processor):
+async def test_generate_reply(message_processor: Any) -> Any:
     """Test generating a reply with conversation history."""
     result = message_processor.execute(channel_id=123, user_content="Hello")
     assert result == "Test response"
 
 
 @pytest.mark.asyncio
-async def test_generate_reply_with_history(message_processor):
+async def test_generate_reply_with_history(message_processor: Any) -> Any:
     """Test generating a reply with existing conversation history."""
     channel = message_processor.repo.get_or_create(456)
     channel.add_message(Message(role="user", content=MessageContent(value="Hello")))

@@ -49,6 +49,9 @@ class TestConfirmClearView:
                 confirm_btn = child
                 break
 
+        if confirm_btn is None:
+            raise AssertionError("Confirm button not found")
+
         await confirm_btn.callback(interaction)
 
         assert mock_use_case.execute.called
@@ -72,6 +75,9 @@ class TestConfirmClearView:
             if isinstance(child, Button) and child.style == discord.ButtonStyle.danger:
                 confirm_btn = child
                 break
+
+        if confirm_btn is None:
+            raise AssertionError("Confirm button not found")
 
         await confirm_btn.callback(interaction)
 
@@ -97,6 +103,9 @@ class TestConfirmClearView:
                 cancel_btn = child
                 break
 
+        if cancel_btn is None:
+            raise AssertionError("Cancel button not found")
+
         await cancel_btn.callback(interaction)
 
         assert interaction.response.edit_message.called
@@ -119,6 +128,9 @@ class TestConfirmClearView:
             if isinstance(child, Button) and child.style == discord.ButtonStyle.secondary:
                 cancel_btn = child
                 break
+
+        if cancel_btn is None:
+            raise AssertionError("Cancel button not found")
 
         await cancel_btn.callback(interaction)
 

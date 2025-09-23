@@ -38,7 +38,7 @@ def test_channel_creation():
     assert channel.count_messages() == 0
 
 
-def test_process_user_turn(mock_ai_service):
+def test_process_user_turn(mock_ai_service: Any) -> Any:
     """Test ProcessUserTurn use case."""
     repo = InMemoryMessageRepository()
     processor = ProcessUserTurn(repo, mock_ai_service)
@@ -46,7 +46,7 @@ def test_process_user_turn(mock_ai_service):
     assert result == "Test response"
 
 
-def test_process_user_turn_channel_exists(mock_ai_service):
+def test_process_user_turn_channel_exists(mock_ai_service: Any) -> Any:
     """Test ProcessUserTurn with existing channel."""
     repo = InMemoryMessageRepository()
     processor = ProcessUserTurn(repo, mock_ai_service)
@@ -191,14 +191,14 @@ class TestRepositoryEdgeCases:
 class TestMessageProcessingEdgeCases:
     """Tests for edge cases in message processing."""
 
-    def test_process_user_turn_with_empty_content(self, mock_ai_service):
+    def test_process_user_turn_with_empty_content(self, mock_ai_service: Any) -> Any:
         """Test processing empty user content."""
         repo = InMemoryMessageRepository()
         processor = ProcessUserTurn(repo, mock_ai_service)
         result = processor.execute(channel_id=123, user_content="")
         assert result == "Test response"
 
-    def test_process_user_turn_with_long_content(self, mock_ai_service):
+    def test_process_user_turn_with_long_content(self, mock_ai_service: Any) -> Any:
         """Test processing long user content."""
         repo = InMemoryMessageRepository()
         processor = ProcessUserTurn(repo, mock_ai_service)

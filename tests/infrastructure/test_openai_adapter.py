@@ -1,5 +1,7 @@
 """Tests for OpenAI adapter."""
 
+from typing import Any
+
 from unittest.mock import Mock
 
 from src.domain.channel.aggregate import Channel
@@ -24,7 +26,7 @@ class TestOpenAIServiceAdapter:
         assert result == "Test reply"
         mock_client.chat_completion.assert_called_once()
 
-    def test_generate_reply_with_system_prompt(self, infrastructure_environment):
+    def test_generate_reply_with_system_prompt(self, infrastructure_environment: Any) -> None:
         """Test that system prompt is included in messages."""
         mock_client = Mock(spec=OpenAIClient)
         mock_client.chat_completion.return_value = "Test reply"

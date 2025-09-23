@@ -1,5 +1,7 @@
 """Tests for OpenAI client (infrastructure layer)."""
 
+from typing import Any
+
 from unittest.mock import Mock, patch
 
 import pytest
@@ -8,7 +10,7 @@ from src.infrastructure.ai.openai.client import OpenAIClient
 
 
 @pytest.fixture
-def mock_openai_client():
+def mock_openai_client() -> Any:
     """Create a mock OpenAI client."""
     with patch("src.infrastructure.ai.openai.client.OpenAI") as mock_openai:
         mock_client_instance = Mock()
@@ -30,7 +32,7 @@ def mock_openai_client():
 
 
 @pytest.mark.asyncio
-async def test_chat_completion_async(mock_openai_client):
+async def test_chat_completion_async(mock_openai_client: Any) -> Any:
     """Test chat completion async method."""
     messages = [{"role": "user", "content": "Hello"}]
     response = await mock_openai_client.chat_completion_async(messages)
@@ -40,7 +42,7 @@ async def test_chat_completion_async(mock_openai_client):
 
 
 @pytest.mark.asyncio
-async def test_chat_completion_with_custom_params(mock_openai_client):
+async def test_chat_completion_with_custom_params(mock_openai_client: Any) -> Any:
     """Test chat completion with custom parameters."""
     messages = [{"role": "user", "content": "Test"}]
     response = await mock_openai_client.chat_completion_async(

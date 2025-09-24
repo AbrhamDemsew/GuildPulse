@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any
+from typing import Any, cast
 
 from openai import OpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
@@ -44,7 +44,7 @@ class OpenAIClient:
             if "thinking" in (model or self.model).lower():
                 response_kwargs["extra_body"] = {"chat_template_kwargs": {"enable_thinking": False}}
 
-            response: ChatCompletion = self.client.chat.completions.create(**response_kwargs)
+            response: ChatCompletion = cast(ChatCompletion, self.client.chat.completions.create(**response_kwargs))
 
             message: ChatCompletionMessage = response.choices[0].message
             content: str = message.content or ""

@@ -163,7 +163,7 @@ def setup_discord_bot() -> commands.Bot:
             channel_locks[channel_id] = asyncio.Lock()
         return channel_locks[channel_id]
 
-    @bot.event
+    @bot.event  # type: ignore[unused-function]  # Called by discord.py client at runtime
     async def on_ready() -> None:
         if bot.user:
             logger.info(f"Logged in as {bot.user} (ID: {bot.user.id})")
@@ -175,6 +175,7 @@ def setup_discord_bot() -> commands.Bot:
             logger.warning("Bot user not initialized")
 
     @bot.event
+    @bot.event  # type: ignore[unused-function]  # Called by discord.py client at runtime
     async def on_message(message: discord.Message) -> None:
         if message.author.bot:
             return
@@ -206,7 +207,7 @@ def setup_discord_bot() -> commands.Bot:
         lock = get_lock(message.channel.id)
         await handle_message_processing(message, message_processor, bot, lock)
 
-    @bot.tree.command(name="help", description="Show help information")
+    @bot.tree.command(name="help", description="Show help information")  # type: ignore[unused-function]  # Called by discord.py client at runtime
     async def help_command(interaction: discord.Interaction) -> None:
         embed = discord.Embed(
             title="Help",
@@ -235,7 +236,7 @@ def setup_discord_bot() -> commands.Bot:
         )
         await interaction.response.send_message(embed=embed)
 
-    @bot.tree.command(name="chat", description="Ask the bot a question")
+    @bot.tree.command(name="chat", description="Ask the bot a question")  # type: ignore[unused-function]  # Called by discord.py client at runtime
     async def chat(interaction: discord.Interaction, query: str) -> None:
         if interaction.channel is None:
             await interaction.response.send_message("Error: Could not determine channel.")
@@ -255,7 +256,7 @@ def setup_discord_bot() -> commands.Bot:
         await interaction.followup.send(response)
 
     @bot.tree.command(name="clear", description="Clear conversation history")
-    @app_commands.checks.has_permissions(manage_messages=True)
+    @app_commands.checks.has_permissions(manage_messages=True)  # type: ignore[unused-function]  # Called by discord.py client at runtime
     async def clear(interaction: discord.Interaction) -> None:
         if interaction.channel is None:
             await interaction.response.send_message("Error: Could not determine channel.")
@@ -272,7 +273,7 @@ def setup_discord_bot() -> commands.Bot:
         view.message = msg  # type: ignore
         await view.wait()
 
-    @bot.event
+    @bot.event  # type: ignore[unused-function]  # Called by discord.py client at runtime
     async def on_error(event: str, *args: Any, **kwargs: Any) -> None:
         logger.error(f"Error in event {event}: {args}, {kwargs}")
 

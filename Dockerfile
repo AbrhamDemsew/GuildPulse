@@ -22,6 +22,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# Install uv for Python package management
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 # Copy installed packages from builder
 COPY --from=builder /usr/local/lib/python3.14/site-packages /usr/local/lib/python3.14/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
@@ -49,5 +52,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Expose port (if needed for future HTTP endpoints)
 # EXPOSE 8080
 
-# Run the application
-CMD ["python", "-m", "src.main"]
+# Run the application with uv
+CMD ["uv", "run", "python", "-m", "src.main"]

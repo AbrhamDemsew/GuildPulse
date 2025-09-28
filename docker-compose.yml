@@ -10,11 +10,9 @@ services:
       - ENV_FILE=.env
       - PYTHONPATH=/app
     restart: unless-stopped
-    dns:
-      - "100.100.100.100"
     stop_grace_period: 10s
     healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      test: ["CMD", "uv", "run", "python", "-c", "import sys; sys.exit(0)"]
       interval: 30s
       timeout: 10s
       retries: 3

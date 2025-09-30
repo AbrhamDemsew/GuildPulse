@@ -1,23 +1,23 @@
 # Discord Bot with OpenAI Integration
 
-A modern Discord bot built with Python 3.13, featuring OpenAI API integration for intelligent conversations. Production-ready with Docker support, comprehensive testing, and clean architecture.
+A modern Discord bot built with Python 3.14, featuring OpenAI API integration for intelligent conversations. Production-ready with Docker support, comprehensive testing, clean architecture, and uv for Python package management.
 
 ## 🚀 Features
 
-- **Intelligent Conversations**: Powered by OpenAI API
+- **Intelligent Conversations**: Powered by OpenAI API (or compatible APIs like Ollama)
 - **Vision Support**: Analyze images attached to Discord messages
 - **Context-Aware Responses**: Maintains conversation history across channels
 - **Smart Mention Detection**: Only responds when mentioned, in DM, or replying to the bot
 - **Message Management**: Keeps track of the last 100 messages per channel
 - **Async Architecture**: Non-blocking operations for optimal performance
-- **Modern Stack**: Python 3.13, discord.py 2.0, Pydantic, standard logging
-- **Production Ready**: Docker support, health checks, comprehensive logging
+- **Modern Stack**: Python 3.14, discord.py 2.0, Pydantic, standard logging
+- **Production Ready**: Docker support with uv, health checks, comprehensive logging
 - **Well-Tested**: Complete test suite with pytest
 - **Clean Architecture**: Separated concerns for maintainability
 
 ## 📋 Prerequisites
 
-- Python 3.13 or higher
+- Python 3.14 or higher
 - Docker (optional, for containerized deployment)
 - Discord Bot Token
 - OpenAI API Key (or compatible API key)
@@ -32,9 +32,9 @@ src/
 ├── domain/                # Core business entities
 │   └── entities.py        # ConversationHistory
 ├── frameworks_drivers/    # External system integrations
-│   └── discord_bot.py     # Discord bot implementation
+│   └── discord/bot.py     # Discord bot implementation
 ├── interface_adapters/    # API clients
-│   └── openai_client.py   # OpenAI API client
+│   └── openai/client.py   # OpenAI API client
 ├── use_cases/             # Business logic
 │   └── message_processing.py
 └── main.py                # Application entry point
@@ -44,39 +44,21 @@ See [Architecture Documentation](docs/ARCHITECTURE.md) for detailed architecture
 
 ## 🔧 Installation
 
-### Local Development
+### Local Development with uv
 
-1. Clone the repository:
 ```bash
+# Clone the repository
 git clone https://github.com/ncls-p/py-besto-bot.git
 cd py-besto-bot
-```
 
-2. Create a virtual environment:
-```bash
-python3 -m venv .venv
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install dependencies
+uv sync
+
+# Activate virtual environment
 source .venv/bin/activate  # On Windows: `.venv\Scripts\activate`
-```
-
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-4. Configure environment variables:
-```bash
-cp .env.example .env
-```
-
-5. Edit `.env` and add your configuration:
-```env
-DISCORD_TOKEN="your-discord-token"
-OPENAI_API_KEY="your-openai-api-key"
-OPENAI_BASE_URL="https://api.openai.com/v1"
-OPENAI_MODEL="gpt-4o-mini"
-OPENAI_MAX_TOKENS=500
-OPENAI_VISION_ENABLED=true
-OPENAI_VISION_MAX_IMAGES=4
 ```
 
 ### Docker Deployment
@@ -105,7 +87,7 @@ docker-compose logs -f
 | `DISCORD_TOKEN` | Yes | - | Discord bot token |
 | `OPENAI_API_KEY` | Yes | - | OpenAI API key |
 | `OPENAI_BASE_URL` | No | `https://api.openai.com/v1` | Custom API base URL |
-| `OPENAI_MODEL` | No | `gpt-4o-mini` | Default model name |
+| `OPENAI_MODEL` | No | `gemma-3-27b-it-qat` | Default model name |
 | `OPENAI_MAX_TOKENS` | No | `500` | Maximum tokens for generation |
 | `OPENAI_TEMPERATURE` | No | `0.7` | Generation temperature |
 | `OPENAI_VISION_ENABLED` | No | `true` | Enable image analysis support |
@@ -139,7 +121,7 @@ OPENAI_API_KEY="your-proxy-key"
 
 ### Vision (Image) Support
 
-When you mention the bot or reply to its previous messages, it can now analyze images:
+When you mention the bot or reply to its previous messages, it can analyze images:
 
 1. Attach one or more images to your Discord message
 2. Add optional text with your question about the images
@@ -152,10 +134,6 @@ User (@bot): Here's a screenshot of the error. What should I do?
 Bot: D'après l'image, il semble y avoir une exception non gérée...
 ```
 
-You can configure vision support via environment variables:
-- `OPENAI_VISION_ENABLED=true` (enabled by default)
-- `OPENAI_VISION_MAX_IMAGES=4` (max 4 images per message)
-
 ### Example Usage
 
 ```
@@ -165,13 +143,6 @@ Bot: Salut ! Je vais bien, merci de demander ! Comment puis-je t'aider aujourd'h
 User: @bot Qu'est-ce que tu as fait aujourd'hui?
 Bot: J'ai passé le temps à apprendre de nouvelles choses. Et toi ?
 ```
-
-### Discord Slash Commands
-
-The bot supports Discord slash commands:
-
-- `/help` - Show help information
-- `/clear` - Clear conversation history (admin only)
 
 ## 🧪 Testing
 
@@ -197,8 +168,8 @@ pytest -v
 # Format code with black
 black src/
 
-# Check code style with flake8
-flake8 src/
+# Check code style with ruff
+ruff check src/
 
 # Type check with mypy
 mypy src/
@@ -219,6 +190,7 @@ The `docker-compose.yml` file includes:
 - JSON file logging with rotation
 - Network isolation
 - Container labels
+- uv integration for Python package management
 
 ### Docker Commands
 
@@ -254,22 +226,14 @@ src/
 └── utils/                 # Utility functions
 ```
 
-### Code Style
-
-- **Language**: Python 3.13
-- **Formatter**: Black (80 character lines)
-- **Linter**: Flake8
-- **Type Checker**: Mypy
-- **Documentation**: Google style docstrings
-
 ### Running Locally
 
 ```bash
-# Run the bot
-python src/main.py
+# Run the bot with uv
+uv run python src/main.py
 
 # Run with specific configuration
-LOG_LEVEL=DEBUG DEBUG=true python src/main.py
+LOG_LEVEL=DEBUG DEBUG=true uv run python src/main.py
 ```
 
 ## 🔐 Security
@@ -394,12 +358,14 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - OpenAI for the incredible API
 - discord.py team for the Discord library
+- uv for the fast Python package manager
 - The Python community
 
 ## 🔗 Links
 
 - [Discord API Documentation](https://discord.com/developers/docs)
 - [OpenAI API Documentation](https://platform.openai.com/docs)
+- [uv Documentation](https://docs.astral.sh/uv/)
 - [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 
 ## 📞 Support
@@ -418,4 +384,4 @@ For issues, questions, or contributions, please open an issue on GitHub.
 
 ---
 
-**Built with ❤️ using Python 3.13, discord.py 2.0, and OpenAI API**
+**Built with ❤️ using Python 3.14, discord.py 2.0, OpenAI API, and uv**

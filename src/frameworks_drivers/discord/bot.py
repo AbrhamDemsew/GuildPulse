@@ -14,7 +14,6 @@ from discord.ui import Button, View, button
 
 from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
 from src.config import setup_logging
-from src.infrastructure.config.adapter import ConfigAdapter
 from src.infrastructure.di.composition_root import CompositionRoot
 
 logger = logging.getLogger(__name__)
@@ -144,11 +143,8 @@ def setup_discord_bot() -> commands.Bot:
 
     logger.info("Initializing dependency injection composition root...")
 
-    # Create config adapter from settings
-    config = ConfigAdapter(**settings.model_dump())
-
-    # Create composition root
-    root = CompositionRoot(config)
+    # Create composition root with Settings directly
+    root = CompositionRoot(settings)
 
     # Get use cases from DI
     message_processor = root.create_message_processor()

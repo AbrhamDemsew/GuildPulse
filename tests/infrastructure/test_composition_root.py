@@ -3,9 +3,9 @@
 from unittest.mock import Mock
 
 from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
+from src.config import Settings
 from src.domain.channel.aggregate import Channel
 from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
-from src.infrastructure.config.adapter import ConfigAdapter
 from src.infrastructure.di.composition_root import CompositionRoot
 
 
@@ -14,14 +14,14 @@ class TestCompositionRoot:
 
     def test_create_message_processor(self):
         """Test creating message processor through DI."""
-        config = Mock(spec=ConfigAdapter)
-        config.openai_api_key = "test-key"
-        config.openai_base_url = "https://api.example.com/v1"
-        config.openai_model = "gpt-4"
-        config.openai_max_tokens = 500
-        config.openai_temperature = 0.7
-        config.chat_system_prompt = "You are a helpful bot"
-        config.log_level = "INFO"
+        config = Mock(spec=Settings)
+        config.OPENAI_API_KEY = "test-key"
+        config.OPENAI_BASE_URL = "https://api.example.com/v1"
+        config.OPENAI_MODEL = "gpt-4"
+        config.OPENAI_MAX_TOKENS = 500
+        config.OPENAI_TEMPERATURE = 0.7
+        config.CHAT_SYSTEM_PROMPT = "You are a helpful bot"
+        config.LOG_LEVEL = "INFO"
 
         root = CompositionRoot(config)
         processor = root.create_message_processor()
@@ -30,14 +30,14 @@ class TestCompositionRoot:
 
     def test_create_clear_history_use_case(self):
         """Test creating clear history use case through DI."""
-        config = Mock(spec=ConfigAdapter)
-        config.openai_api_key = "test-key"
-        config.openai_base_url = "https://api.example.com/v1"
-        config.openai_model = "gpt-4"
-        config.openai_max_tokens = 500
-        config.openai_temperature = 0.7
-        config.chat_system_prompt = "You are a helpful bot"
-        config.log_level = "INFO"
+        config = Mock(spec=Settings)
+        config.OPENAI_API_KEY = "test-key"
+        config.OPENAI_BASE_URL = "https://api.example.com/v1"
+        config.OPENAI_MODEL = "gpt-4"
+        config.OPENAI_MAX_TOKENS = 500
+        config.OPENAI_TEMPERATURE = 0.7
+        config.CHAT_SYSTEM_PROMPT = "You are a helpful bot"
+        config.LOG_LEVEL = "INFO"
 
         root = CompositionRoot(config)
         use_case = root.create_clear_history_use_case()
@@ -46,14 +46,14 @@ class TestCompositionRoot:
 
     def test_message_processor_has_ai_service(self):
         """Test that message processor has AI service adapter."""
-        config = Mock(spec=ConfigAdapter)
-        config.openai_api_key = "test-key"
-        config.openai_base_url = "https://api.example.com/v1"
-        config.openai_model = "gpt-4"
-        config.openai_max_tokens = 500
-        config.openai_temperature = 0.7
-        config.chat_system_prompt = "You are a helpful bot"
-        config.log_level = "INFO"
+        config = Mock(spec=Settings)
+        config.OPENAI_API_KEY = "test-key"
+        config.OPENAI_BASE_URL = "https://api.example.com/v1"
+        config.OPENAI_MODEL = "gpt-4"
+        config.OPENAI_MAX_TOKENS = 500
+        config.OPENAI_TEMPERATURE = 0.7
+        config.CHAT_SYSTEM_PROMPT = "You are a helpful bot"
+        config.LOG_LEVEL = "INFO"
 
         root = CompositionRoot(config)
         processor = root.create_message_processor()
@@ -64,14 +64,14 @@ class TestCompositionRoot:
 
     def test_full_workflow_integration(self):
         """Test complete workflow through DI root with mocked AI service."""
-        config = Mock(spec=ConfigAdapter)
-        config.openai_api_key = "test-key"
-        config.openai_base_url = "https://api.example.com/v1"
-        config.openai_model = "gpt-4"
-        config.openai_max_tokens = 500
-        config.openai_temperature = 0.7
-        config.chat_system_prompt = "You are a helpful bot"
-        config.log_level = "INFO"
+        config = Mock(spec=Settings)
+        config.OPENAI_API_KEY = "test-key"
+        config.OPENAI_BASE_URL = "https://api.example.com/v1"
+        config.OPENAI_MODEL = "gpt-4"
+        config.OPENAI_MAX_TOKENS = 500
+        config.OPENAI_TEMPERATURE = 0.7
+        config.CHAT_SYSTEM_PROMPT = "You are a helpful bot"
+        config.LOG_LEVEL = "INFO"
 
         root = CompositionRoot(config)
 
@@ -91,14 +91,14 @@ class TestCompositionRoot:
 
     def test_multiple_channels_independent(self):
         """Test that multiple channels work independently with mocked AI service."""
-        config = Mock(spec=ConfigAdapter)
-        config.openai_api_key = "test-key"
-        config.openai_base_url = "https://api.example.com/v1"
-        config.openai_model = "gpt-4"
-        config.openai_max_tokens = 500
-        config.openai_temperature = 0.7
-        config.chat_system_prompt = "You are a helpful bot"
-        config.log_level = "INFO"
+        config = Mock(spec=Settings)
+        config.OPENAI_API_KEY = "test-key"
+        config.OPENAI_BASE_URL = "https://api.example.com/v1"
+        config.OPENAI_MODEL = "gpt-4"
+        config.OPENAI_MAX_TOKENS = 500
+        config.OPENAI_TEMPERATURE = 0.7
+        config.CHAT_SYSTEM_PROMPT = "You are a helpful bot"
+        config.LOG_LEVEL = "INFO"
 
         root = CompositionRoot(config)
 

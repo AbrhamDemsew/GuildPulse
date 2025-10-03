@@ -308,8 +308,3 @@ class TestSetupDiscordBot:
                 assert hasattr(bot, "tree")
                 assert hasattr(bot, "event")
                 assert hasattr(bot, "command")
-
-    @pytest.mark.skip(reason="discord library validation prevents mocking Intents")
-    def test_setup_discord_bot_intents(self):
-        """Test that setup_discord_bot configures correct intents."""
-        pass

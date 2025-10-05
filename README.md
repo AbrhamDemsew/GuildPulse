@@ -12,8 +12,9 @@ A modern Discord bot built with Python 3.14, featuring OpenAI API integration fo
 - **Async Architecture**: Non-blocking operations for optimal performance
 - **Modern Stack**: Python 3.14, discord.py 2.0, Pydantic, standard logging
 - **Production Ready**: Docker support with uv, health checks, comprehensive logging
-- **Well-Tested**: Complete test suite with pytest
-- **Clean Architecture**: Separated concerns for maintainability
+- **Well-Tested**: 205+ tests with 79% coverage, 0 errors, 0 warnings
+- **Clean Architecture**: Layered architecture (Domain, Application, Infrastructure, Frameworks)
+- **Type Safety**: Full type checking with basedpyright
 
 ## 📋 Prerequisites
 
@@ -24,20 +25,32 @@ A modern Discord bot built with Python 3.14, featuring OpenAI API integration fo
 
 ## 🏗️ Architecture
 
-The bot follows Clean Architecture principles with clear separation of concerns:
+The bot follows **Clean Architecture** with **Domain-Driven Design (DDD)** principles, featuring:
+
+- **Domain Layer**: Core business entities (channels, messages, events)
+- **Application Layer**: Use cases (message processing, history management)
+- **Infrastructure Layer**: Adapters (OpenAI, repository)
+- **Framework Layer**: Discord bot integration
+- **Test Suite**: 205+ tests with 79% coverage
 
 ```
 src/
-├── config.py              # Configuration management (Pydantic)
-├── domain/                # Core business entities
-│   └── entities.py        # ConversationHistory
-├── frameworks_drivers/    # External system integrations
-│   └── discord/bot.py     # Discord bot implementation
-├── interface_adapters/    # API clients
-│   └── openai/client.py   # OpenAI API client
-├── use_cases/             # Business logic
-│   └── message_processing.py
-└── main.py                # Application entry point
+├── config.py                         # Configuration management (Pydantic)
+├── domain/                           # Core business logic (NO external dependencies)
+│   ├── channel/                      # Channel domain
+│   └── shared/                       # Shared domain entities
+├── frameworks_drivers/               # External frameworks (Discord, AI)
+│   └── discord/
+│       └── bot.py                    # Discord bot integration
+├── interface_adapters/               # API clients and adapters
+│   └── openai/
+│       ├── adapter.py                # OpenAI service adapter
+│       └── client.py                 # OpenAI API client
+├── application/                      # Application layer
+│   └── messaging/
+│       ├── handlers.py               # Use case handlers
+│       └── ports.py                  # Application ports
+└── main.py                           # Application entry point
 ```
 
 See [Architecture Documentation](docs/ARCHITECTURE.md) for detailed architecture information.
@@ -113,11 +126,16 @@ OPENAI_API_KEY="your-proxy-key"
 
 ## 📖 Usage
 
-### Basic Commands
+### Commands
 
 - **@bot**: Mention the bot to trigger a response
 - **\*help**: Show help information
-- **\*clear**: Clear conversation history (admin only)
+- **\*clear**: Clear conversation history (admin only, with confirmation)
+- **/chat <query>**: Ask the bot a question via slash command
+- **/help**: Show help information
+- **/clear**: Clear conversation history (admin only)
+
+### Vision (Image) Support
 
 ### Vision (Image) Support
 
@@ -152,32 +170,44 @@ Bot: J'ai passé le temps à apprendre de nouvelles choses. Et toi ?
 # Run all tests
 pytest
 
-# Run with coverage
-pytest --cov=src --cov-report=html
+# Run with coverage and verbose output
+pytest --cov=src --cov-report=term-missing -v
 
 # Run specific test file
 pytest tests/test_openai_client.py
 
-# Run with verbose output
-pytest -v
+# Run with specific test markers
+pytest -m unit          # Run unit tests
+pytest -m integration   # Run integration tests
+pytest -m "not slow"    # Skip slow tests
 ```
 
 ### Code Quality
 
 ```bash
 # Format code with black
-black src/
+black src/ tests/
 
 # Check code style with ruff
-ruff check src/
+ruff check src/ tests/
 
-# Type check with mypy
-mypy src/
+# Type check with basedpyright
+basedpyright src/ tests/
 
 # Install and run pre-commit hooks
 pre-commit install
 pre-commit run --all-files
 ```
+
+### Coverage
+
+- **Total Coverage**: 79%
+- **Domain Layer**: 100%
+- **Application Layer**: 100%
+- **Infrastructure Layer**: 100%
+- **Framework Layer**: 57%
+
+See [Testing Documentation](docs/TESTING.md) for comprehensive testing guide.
 
 ## 🚢 Docker
 
@@ -217,14 +247,23 @@ docker-compose exec bot python -c "print('Hello')"
 
 ```
 src/
-├── config.py              # Configuration management
-├── main.py                # Application entry point
-├── domain/                # Domain entities
-├── frameworks_drivers/    # Discord bot integration
-├── interface_adapters/    # API clients
-├── use_cases/             # Business logic
-└── utils/                 # Utility functions
+├── config.py                         # Configuration management
+├── main.py                           # Application entry point
+├── domain/                           # Domain layer (business entities)
+│   ├── channel/                      # Channel domain
+│   └── shared/                       # Shared domain entities
+├── frameworks_drivers/               # Framework layer (Discord)
+│   └── discord/
+├── interface_adapters/               # Infrastructure layer
+│   └── openai/
+├── application/                      # Application layer
+│   └── messaging/
+└── infrastructure/                   # Infrastructure layer
+    ├── ai/
+    └── persistence/
 ```
+
+See [Architecture Documentation](docs/ARCHITECTURE.md) for detailed architecture information.
 
 ### Running Locally
 
@@ -235,6 +274,35 @@ uv run python src/main.py
 # Run with specific configuration
 LOG_LEVEL=DEBUG DEBUG=true uv run python src/main.py
 ```
+
+## 🧪 Testing
+
+See [Testing Documentation](docs/TESTING.md) for comprehensive testing guide.
+
+### Quick Test Commands
+
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=src --cov-report=term-missing -v
+
+# Run specific test file
+pytest tests/domain/test_value_objects.py
+```
+
+### Test Coverage
+
+| Layer | Coverage |
+|-------|----------|
+| Domain | 100% |
+| Application | 100% |
+| Infrastructure | 100% |
+| Framework | 57% |
+| **Total** | **79%** |
+
+See [Testing Documentation](docs/TESTING.md) for comprehensive testing guide.
 
 ## 🔐 Security
 

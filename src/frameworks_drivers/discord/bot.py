@@ -19,8 +19,6 @@ from src.infrastructure.di.composition_root import CompositionRoot
 logger = logging.getLogger(__name__)
 
 
-
-
 class ConfirmClearView(View):
     """View with confirm/cancel buttons for clearing channel history."""
 

@@ -6,6 +6,10 @@ import pytest
 
 from src.infrastructure.ai.openai.client import OpenAIClient
 
+# ============================================================================
+# TestOpenAIClientSync - Basic functionality tests
+# ============================================================================
+
 
 class TestOpenAIClientSync:
     """Tests for OpenAIClient sync chat_completion method."""
@@ -126,6 +130,11 @@ class TestOpenAIClientSync:
             assert mock_logger.info.called
 
 
+# ============================================================================
+# TestOpenAIClientSyncErrorHandling - Error handling tests
+# ============================================================================
+
+
 class TestOpenAIClientSyncErrorHandling:
     """Tests for error handling in sync methods."""
 
@@ -165,6 +174,11 @@ class TestOpenAIClientSyncErrorHandling:
             client.chat_completion([{"role": "user", "content": "Test"}])
 
             assert mock_logger.debug.called
+
+
+# ============================================================================
+# TestOpenAIClientMultimodal - Multimodal content tests
+# ============================================================================
 
 
 class TestOpenAIClientMultimodal:
@@ -207,3 +221,173 @@ class TestOpenAIClientMultimodal:
             max_tokens=100,
             temperature=0.5,
         )
+
+
+# ============================================================================
+# TestOpenAIClientEdgeCases - Edge case tests
+# ============================================================================
+
+
+class TestOpenAIClientEdgeCases:
+    """Tests for edge cases in OpenAI client sync methods."""
+
+    def test_empty_messages_list(self):
+        """Test with empty messages list."""
+        client = OpenAIClient(
+            api_key="test",
+            base_url="https://test.com",
+            model="test-model",
+        )
+
+        mock_response = Mock()
+        mock_response.choices = [Mock()]
+        mock_response.choices[0].message.content = "Response"
+        client.client.chat.completions.create = Mock(return_value=mock_response)
+
+        result = client.chat_completion([])
+
+        assert result == "Response"
+
+    def test_multiple_messages(self):
+        """Test with multiple messages."""
+        client = OpenAIClient(
+            api_key="test",
+            base_url="https://test.com",
+            model="test-model",
+        )
+
+        mock_response = Mock()
+        mock_response.choices = [Mock()]
+        mock_response.choices[0].message.content = "Response"
+        client.client.chat.completions.create = Mock(return_value=mock_response)
+
+        messages = [
+            {"role": "user", "content": "Hello"},
+            {"role": "assistant", "content": "Hi"},
+            {"role": "user", "content": "How are you?"},
+        ]
+        result = client.chat_completion(messages)
+
+        assert result == "Response"
+
+    def test_different_models(self):
+        """Test with different model names."""
+        models = [
+            "gpt-3.5-turbo",
+            "gpt-4",
+            "gpt-4-turbo",
+            "gpt-4o",
+            "gemini-pro",
+            "llama-3",
+        ]
+
+        for model in models:
+            client = OpenAIClient(
+                api_key="test",
+                base_url="https://test.com",
+                model=model,
+            )
+
+            mock_response = Mock()
+            mock_response.choices = [Mock()]
+            mock_response.choices[0].message.content = f"Response from {model}"
+            client.client.chat.completions.create = Mock(return_value=mock_response)
+
+            result = client.chat_completion([{"role": "user", "content": "Test"}])
+
+            assert result == f"Response from {model}"
+
+    def test_max_tokens_edge_cases(self):
+        """Test with different max token values."""
+        for max_tokens in [1, 100, 500, 1000, 2000]:
+            client = OpenAIClient(
+                api_key="test",
+                base_url="https://test.com",
+                model="test-model",
+                max_tokens=max_tokens,
+            )
+
+            mock_response = Mock()
+            mock_response.choices = [Mock()]
+            mock_response.choices[0].message.content = "Response"
+            client.client.chat.completions.create = Mock(return_value=mock_response)
+
+            result = client.chat_completion([{"role": "user", "content": "Test"}])
+
+            assert result == "Response"
+
+    def test_temperature_edge_cases(self):
+        """Test with different temperature values."""
+        for temperature in [0.0, 0.5, 1.0, 1.5]:
+            client = OpenAIClient(
+                api_key="test",
+                base_url="https://test.com",
+                model="test-model",
+                temperature=temperature,
+            )
+
+            mock_response = Mock()
+            mock_response.choices = [Mock()]
+            mock_response.choices[0].message.content = "Response"
+            client.client.chat.completions.create = Mock(return_value=mock_response)
+
+            result = client.chat_completion([{"role": "user", "content": "Test"}])
+
+            assert result == "Response"
+
+    def test_long_content(self):
+        """Test with very long content."""
+        long_content = "A" * 10000
+
+        client = OpenAIClient(
+            api_key="test",
+            base_url="https://test.com",
+            model="test-model",
+        )
+
+        mock_response = Mock()
+        mock_response.choices = [Mock()]
+        mock_response.choices[0].message.content = "Response"
+        client.client.chat.completions.create = Mock(return_value=mock_response)
+
+        result = client.chat_completion([{"role": "user", "content": long_content}])
+
+        assert result == "Response"
+
+    def test_special_characters_in_content(self):
+        """Test with special characters in content."""
+        special_content = "Hello\nWorld\tTabbed\u00a0NonBreaking\u200bZeroWidth"
+
+        client = OpenAIClient(
+            api_key="test",
+            base_url="https://test.com",
+            model="test-model",
+        )
+
+        mock_response = Mock()
+        mock_response.choices = [Mock()]
+        mock_response.choices[0].message.content = "Response"
+        client.client.chat.completions.create = Mock(return_value=mock_response)
+
+        result = client.chat_completion([{"role": "user", "content": special_content}])
+
+        assert result == "Response"
+
+    def test_unicode_content(self):
+        """Test with unicode content."""
+        unicode_content = "Hello 世界 🌍 مرحبا"
+
+        client = OpenAIClient(
+            api_key="test",
+            base_url="https://test.com",
+            model="test-model",
+        )
+
+        mock_response = Mock()
+        mock_response.choices = [Mock()]
+        mock_response.choices[0].message.content = "Response"
+        client.client.chat.completions.create = Mock(return_value=mock_response)
+
+        result = client.chat_completion([{"role": "user", "content": unicode_content}])
+
+        assert result == "Response"

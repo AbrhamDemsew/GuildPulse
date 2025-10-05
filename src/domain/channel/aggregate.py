@@ -46,9 +46,7 @@ class Channel:
         """Clear all messages in the channel and record domain event."""
         previous_count = len(self.messages)
         self.messages.clear()
-        self._domain_events.append(
-            ConversationCleared.from_channel(self, previous_count)
-        )
+        self._domain_events.append(ConversationCleared.from_channel(self, previous_count))
 
     def count_messages(self) -> int:
         """Count the number of messages."""

@@ -1,6 +1,5 @@
 """Comprehensive tests for the new Clean Architecture."""
 
-
 from typing import Any
 
 from unittest.mock import Mock

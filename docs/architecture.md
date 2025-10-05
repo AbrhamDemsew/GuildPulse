@@ -9,16 +9,28 @@ src/
 ├── config.py                         # Configuration management (Pydantic)
 ├── main.py                           # Application entry point
 ├── domain/                           # Core business logic (NO external dependencies)
-│   └── entities.py                   # Domain entities (ConversationHistory)
+│   ├── channel/                      # Channel domain (Channel, Message, MessageRole)
+│   ├── shared/                       # Shared domain entities (errors, events)
+│   └── repository.py                 # Domain repository interface
 ├── frameworks_drivers/               # External frameworks (Discord, AI)
 │   └── discord/
-│       └── bot.py                    # Discord bot integration
+│       ├── bot.py                    # Discord bot integration
+│       └── sync_commands.py          # Sync slash commands
 ├── interface_adapters/               # API clients and adapters
 │   └── openai/
+│       ├── adapter.py                # OpenAI service adapter
 │       └── client.py                 # OpenAI API client
-├── use_cases/                        # Business logic and orchestration
-│   └── message_processing.py         # Use case for message processing
-└── utils/                            # Utility functions
+├── application/                      # Application layer
+│   ├── messaging/
+│   │   ├── handlers.py               # Use case handlers (ProcessUserTurn, ClearChannelHistory)
+│   │   └── ports.py                  # Application ports (ConfigPort, etc.)
+│   └── shared/                       # Shared application code
+└── infrastructure/                   # Infrastructure layer
+    ├── ai/                           # AI infrastructure
+    ├── di/                           # Dependency injection
+    │   └── composition_root.py       # Composition root for DI
+    └── persistence/                  # Persistence layer
+        └── memory/                   # In-memory repository implementation
 ```
 
 ## Dependency Rules
@@ -26,25 +38,40 @@ src/
 The architecture follows strict dependency rules to maintain clean separation:
 
 - **Domain Layer** (`domain/`): No external dependencies. Contains pure business logic and entities.
-- **Application Layer** (`use_cases/`): Depends on domain layer. Contains use cases and orchestrates business logic.
-- **Infrastructure Layer** (`interface_adapters/`): Depends on domain layer. Contains adapters for external systems (API clients).
+- **Application Layer** (`application/`): Depends on domain layer. Contains use cases and orchestrates business logic.
+- **Infrastructure Layer** (`infrastructure/`): Depends on domain layer. Contains adapters for external systems (API clients, repositories).
 - **Frameworks Layer** (`frameworks_drivers/`): Depends on application layer (via DI). Contains framework-specific code (Discord bot).
 
 ## Key Patterns
 
 ### Entities
-- **ConversationHistory**: Represents the conversation state for a channel, containing message history and metadata.
+- **Channel**: Represents a conversation channel with message history and limits
+- **Message**: Immutable value object representing a single message
+- **MessageRole**: Enum for message roles (user, assistant, system)
 
 ### Value Objects
-- **Message**: Immutable value object representing a single message with content, author, timestamp, and attachments.
+- **MessageContent**: Value object for message content with validation
 
 ### Ports & Adapters
 - **AIServicePort**: Interface defining the contract for AI service operations (chat completion, image analysis).
 - **ConfigPort**: Interface for configuration management.
 
 ### Use Cases
-- **ProcessUserTurn**: Orchestrates the message processing flow from Discord message to AI response.
-- **ClearChannelHistory**: Clears conversation history for a specific channel.
+- **ProcessUserTurn**: Handles the message processing flow:
+  1. Validates input message
+  2. Retrieves or creates channel
+  3. Updates conversation history
+  4. Calls AI service for response
+  5. Updates conversation history with response
+  6. Returns formatted response
+- **ClearChannelHistory**: Clears the conversation history for a specific channel
+
+### Test Suite
+- **205+ tests** with **79% coverage**
+- **Parameterized tests** for edge cases
+- **Fixtures** for dependency injection
+- **Mock-based testing** for external dependencies
+- **Type checking** with basedpyright (0 errors)
 
 ### Dependency Injection
 - **CompositionRoot**: Central point for dependency injection, wiring up all components.
@@ -70,34 +97,56 @@ Dependencies flow inward, from outer layers to inner layers.
 **Purpose**: Core business logic and entities that have no dependencies on external systems.
 
 **Entities**:
-- `ConversationHistory`: Manages conversation state including message history, timestamps, and metadata.
+- `Channel`: Aggregates conversation state with message history, limits, and metadata
+- `Message`: Immutable value object with content, role, and optional attachments
+- `MessageRole`: Enum (USER, ASSISTANT, SYSTEM) for message roles
 
 **Value Objects**:
-- `Message`: Immutable representation of a Discord message.
+- `MessageContent`: Wraps message content with validation (max 256 chars)
 
-### Application Layer (`use_cases/`)
+**Errors**:
+- `DomainError`: Base error for all domain errors
+- `ChannelNotFoundError`: Raised when channel not found
+- `MessageValidationError`: Raised for invalid message content
+
+**Events**:
+- `ChannelCreated`, `ChannelUpdated`, `MessageAdded`, `ConversationCleared`
+
+### Application Layer (`application/`)
+
+### Application Layer (`application/`)
 
 **Purpose**: Contains business logic and orchestrates use cases.
 
 **Use Cases**:
 - `ProcessUserTurn`: Handles the main message processing flow:
   1. Validates input message
-  2. Retrieves conversation history
-  3. Calls AI service for response
-  4. Updates conversation history
-  5. Returns formatted response
+  2. Retrieves or creates channel
+  3. Updates conversation history with user message
+  4. Calls AI service for response
+  5. Updates conversation history with bot response
+  6. Returns formatted response
 
-- `ClearChannelHistory`: Clears the conversation history for a specific channel.
+- `ClearChannelHistory`: Clears the conversation history for a specific channel
+
+**Ports**:
+- `AIServicePort`: Interface for AI service operations
+- `ConfigPort`: Interface for configuration management
+- `RepositoryPort`: Interface for data persistence
 
 ### Interface Adapters Layer (`interface_adapters/`)
 
 **Purpose**: Adapters that connect the application to external systems.
 
-**OpenAI Client**:
+**OpenAI Adapter**:
 - Implements `AIServicePort` interface
 - Handles API communication with OpenAI-compatible services
 - Supports both text and vision (image analysis)
 - Manages conversation context and token limits
+
+**Infrastructure**:
+- `Repository`: In-memory repository for channels
+- `CompositionRoot`: Dependency injection container
 
 ### Frameworks Drivers Layer (`frameworks_drivers/`)
 
@@ -105,10 +154,15 @@ Dependencies flow inward, from outer layers to inner layers.
 
 **Discord Bot**:
 - Integrates with discord.py for Discord functionality
-- Implements Discord commands and slash commands
-- Handles message events and interactions
+- Implements Discord commands (slash commands, traditional commands)
+- Handles message events (on_message)
 - Manages conversation history per channel
 - Implements rate limiting and error handling
+- Supports DMs and mentions
+
+**Services**:
+- `SyncCommands`: Synchronous slash command registration
+- `Bot`: Main bot class with event handlers
 
 ### Configuration Layer
 
@@ -132,64 +186,79 @@ Dependencies flow inward, from outer layers to inner layers.
 ```
 User sends Discord message
          ↓
-Discord Bot receives event
-         ↓
-on_message event handler
+Discord Bot receives event (on_message)
          ↓
 ProcessUserTurn use case
          ↓
-ConversationHistory (domain)
+Channel aggregate (domain)
          ↓
-OpenAI Client (adapter)
+OpenAI Service Adapter (interface adapters)
          ↓
-OpenAI API
+OpenAI API (external dependency)
          ↓
 ProcessUserTurn returns response
          ↓
 Discord Bot formats and sends response
          ↓
-ConversationHistory updated
+Channel updated with conversation history
 ```
 
 ## Testing Strategy
 
-### Unit Tests
-- Domain entities (ConversationHistory, Message)
-- Pure functions and utilities
-- Use case logic in isolation
+### Test Organization by Layer
+- **Domain Tests**: `tests/domain/` - Entities, value objects, errors
+- **Application Tests**: `tests/application/` - Use cases, ports
+- **Infrastructure Tests**: `tests/infrastructure/` - Adapters, repositories
+- **Framework Tests**: `tests/frameworks_drivers/` - Discord integration
 
-### Integration Tests
-- Use case with mocked dependencies
-- OpenAI client with mocked API calls
-- Discord bot integration
+### Test Types
+- **Unit Tests**: Pure business logic in isolation
+- **Parameterized Tests**: Edge cases and boundary conditions
+- **Fixture-Based Tests**: Complex test data with factories
+- **Async Tests**: Async/await patterns with pytest-asyncio
+- **Integration Tests**: With mocked external dependencies
 
-### End-to-End Tests
-- Full message flow from Discord to response
-- Docker container integration tests
+### Test Coverage
+- **Total**: 79% (target: 90%+)
+- **Domain**: 100%
+- **Application**: 100%
+- **Infrastructure**: 100%
+- **Framework**: 57% ( Discord bot events)
+
+### Test Markers
+- `unit`: Unit tests
+- `integration`: Integration tests
+- `slow`: Slow running tests
+- `async`: Async tests
+- `requires_api`: Tests requiring external API access
 
 ## Docker Containerization
 
-### Dockerfile
-- Multi-stage build for optimization
-- Installs uv for Python package management
-- Runs as non-root user (botuser:1000)
-- Health checks for monitoring
+### Dockerfile Features
+- **Multi-stage build**: Optimized image size
+- **uv integration**: Fast Python package manager
+- **Non-root user**: Runs as `botuser:1000` for security
+- **Health checks**: Built-in health monitoring
+- **Minimal base**: python:3.14-slim image
+- **Cache optimization**: Layer caching for dependencies
 
-### docker-compose.yml
-- Service definition with restart policy
-- Health checks
-- Logging configuration with rotation
-- Network isolation
-- Container labels for organization
+### docker-compose.yml Features
+- **Automatic restart**: Always restart policy
+- **Health checks**: HTTP health endpoint
+- **Logging**: JSON file logging with rotation (10MB, 5 files)
+- **Network isolation**: Custom network for security
+- **Container labels**: Organization and metadata
 
 ## Configuration
 
 ### Environment Variables
 
+All configuration is managed via Pydantic's `Settings` class with type validation.
+
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `DISCORD_TOKEN` | Discord bot token | - |
-| `OPENAI_API_KEY` | OpenAI API key | - |
+| `DISCORD_TOKEN` | Discord bot token (required) | - |
+| `OPENAI_API_KEY` | OpenAI API key (required) | - |
 | `OPENAI_BASE_URL` | Custom API base URL | `https://api.openai.com/v1` |
 | `OPENAI_MODEL` | Default model name | `gemma-3-27b-it-qat` |
 | `OPENAI_MAX_TOKENS` | Maximum tokens for response | `500` |
@@ -225,6 +294,38 @@ ConversationHistory updated
 4. **Follow dependency rules**: Dependencies should only point inward.
 5. **Containerize**: Use Docker for consistent deployment.
 6. **Use uv**: Leverage uv for fast dependency management.
+
+## Testing
+
+### Test Organization
+
+Tests follow the Clean Architecture layers:
+
+```
+tests/
+├── conftest.py                       # Shared fixtures and setup
+├── domain/                           # Domain layer tests
+│   ├── test_errors.py
+│   ├── test_value_objects.py
+│   └── test_channel.py
+├── application/                      # Application layer tests
+│   └── test_use_cases.py
+├── infrastructure/                   # Infrastructure layer tests
+│   ├── test_openai_sync.py
+│   └── test_repository.py
+├── frameworks_drivers/               # Framework tests
+│   └── test_discord_bot.py
+├── test_message_processor.py         # Integration tests
+└── test_new_architecture.py          # New architecture tests
+```
+
+### Test Patterns
+
+- **Parameterized tests**: `@pytest.mark.parametrize`
+- **Fixtures**: Factory pattern for test data
+- **Async tests**: `@pytest.mark.asyncio`
+- **Mocking**: `unittest.mock` for external dependencies
+- **Type checking**: `basedpyright` for all code
 
 ## Future Enhancements
 

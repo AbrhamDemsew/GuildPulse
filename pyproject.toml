@@ -22,6 +22,9 @@ dev = [
     "ruff>=0.1.0",
     "basedpyright>=1.1.0",
     "black>=23.0.0",
+    "hypothesis>=6.100.0",
+    "freezegun>=1.2.0",
+    "types-requests>=2.31.0",
 ]
 
 [tool.black]
@@ -49,7 +52,16 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-asyncio_mode = "auto"
+
+markers = [
+    "unit: Unit tests - Fast, isolated tests of individual components",
+    "integration: Integration tests - Tests that interact with multiple components",
+    "slow: Slow running tests - May take more than 1 second",
+    "async: Async tests - Tests using async/await",
+    "requires_api: Tests that require external API access",
+    "parametrize: Tests with parameterized inputs",
+    "edge_cases: Tests for edge cases and error conditions",
+]
 
 [tool.basedpyright]
 include = ["src", "tests"]

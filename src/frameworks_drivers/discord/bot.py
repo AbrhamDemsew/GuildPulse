@@ -98,8 +98,13 @@ async def handle_message_processing(
             image_urls: tuple[str, ...] = tuple(
                 attachment.url
                 for attachment in message.attachments
-                if attachment.content_type and attachment.content_type.startswith("image/")
+                if attachment.content_type
+                and attachment.content_type.startswith("image/")
+                and (attachment.size is None or attachment.size <= 10 * 1024 * 1024)
             )
+
+            if image_urls:
+                logger.info(f"Detected {len(image_urls)} image(s) in message from {author_name}")
 
             if not clean_message:
                 clean_message = "[attachment]"

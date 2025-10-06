@@ -210,6 +210,7 @@ class TestHandleMessageProcessing:
         mock_attachment = Mock()
         mock_attachment.url = "https://example.com/image.jpg"
         mock_attachment.content_type = "image/jpeg"
+        mock_attachment.size = 1024 * 1024  # 1MB, under the 10MB limit
 
         mock_message.attachments = [mock_attachment]
 

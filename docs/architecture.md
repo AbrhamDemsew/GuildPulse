@@ -164,6 +164,25 @@ Dependencies flow inward, from outer layers to inner layers.
 - `SyncCommands`: Synchronous slash command registration
 - `Bot`: Main bot class with event handlers
 
+### Image Handling
+
+**Purpose**: Process and validate images attached to Discord messages for AI analysis.
+
+**Components**:
+- **Bot Layer** (`src/frameworks_drivers/discord/bot.py`): Extracts image URLs from attachments
+- **Validation**: Max 10MB per image (OpenAI recommended limit)
+- **Logging**: Reports detected image count for debugging
+- **OpenAI Adapter** (`src/infrastructure/ai/openai/adapter.py`): Formats multimodal messages
+
+**Flow**:
+1. Discord message received with attachments
+2. Filter attachments by content type (`image/*`)
+3. Validate image size (≤10MB)
+4. Extract URLs to `image_urls` tuple
+5. Pass to `ProcessUserTurn.execute()` with `image_urls` parameter
+6. OpenAI adapter formats multimodal content (text + image URLs)
+7. OpenAI API analyzes images and generates response
+
 ### Configuration Layer
 
 **Purpose**: Centralized configuration management.
@@ -188,11 +207,17 @@ User sends Discord message
          ↓
 Discord Bot receives event (on_message)
          ↓
+[Image Processing] Extract and validate image URLs (max 10MB)
+         ↓
+[Logging] Report detected image count
+         ↓
 ProcessUserTurn use case
          ↓
 Channel aggregate (domain)
          ↓
 OpenAI Service Adapter (interface adapters)
+         ↓
+[Multimodal Format] Add images to user message as image_url entries
          ↓
 OpenAI API (external dependency)
          ↓

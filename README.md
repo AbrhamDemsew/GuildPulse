@@ -137,13 +137,16 @@ OPENAI_API_KEY="your-proxy-key"
 
 ### Vision (Image) Support
 
-### Vision (Image) Support
-
 When you mention the bot or reply to its previous messages, it can analyze images:
 
-1. Attach one or more images to your Discord message
+1. Attach one or more images to your Discord message (max 10MB each)
 2. Add optional text with your question about the images
 3. The bot will analyze the images and respond accordingly
+
+**Features:**
+- Automatic image size validation (max 10MB per image)
+- Logging for image detection and processing
+- Support for multiple images in a single message
 
 Example:
 ```

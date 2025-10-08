@@ -105,24 +105,47 @@ This project follows **Clean Architecture** with Domain-Driven Design principles
 
 ```
 src/
-├── config.py            # Configuration management (Pydantic)
-├── main.py              # Application entry point
-├── domain/              # Core business logic and entities
-│   └── entities.py      # ConversationHistory
-├── frameworks_drivers/  # External systems (Discord, AI)
-│   └── discord/bot.py   # Discord bot implementation
-├── interface_adapters/  # API clients and adapters
-│   └── openai/client.py # OpenAI API client
-├── use_cases/           # Business logic and orchestration
-│   └── message_processing.py
-└── utils/               # Utility functions
+├── config.py                         # Configuration management (Pydantic)
+├── main.py                           # Application entry point
+├── domain/                           # Core business logic (NO external dependencies)
+│   ├── channel/                      # Channel domain (Channel, Message, MessageRole)
+│   └── shared/                       # Shared domain entities (errors, events)
+├── frameworks_drivers/               # Framework layer (Discord)
+│   └── discord/
+│       ├── bot.py                    # Discord bot integration
+│       └── sync_commands.py          # Sync slash commands
+├── application/                      # Application layer
+│   └── messaging/
+│       ├── handlers.py               # Use case handlers (ProcessUserTurn, ClearChannelHistory)
+│       └── ports.py                  # Application ports (AIServicePort, etc.)
+├── infrastructure/                   # Infrastructure layer
+│   ├── ai/                           # AI infrastructure
+│   │   └── openai/
+│   │       ├── adapter.py            # OpenAI service adapter
+│   │       └── client.py             # OpenAI API client
+│   ├── di/                           # Dependency injection
+│   │   └── composition_root.py       # Composition root for DI
+│   └── persistence/                  # Persistence layer
+│       └── memory/                   # In-memory repository implementation
+└── utils/                            # Utility functions (if any)
 ```
 
 **Dependency Rules:**
-- **Domain layer**: No external dependencies
-- **Application layer**: Depends on domain layer
-- **Infrastructure layer**: Depends on domain and application (adapters)
-- **Frameworks layer**: Depends on application (DI through CompositionRoot)
+- **Domain layer** (`domain/`): No external dependencies. Contains pure business logic and entities.
+- **Application layer** (`application/`): Depends on domain layer. Contains use cases and orchestrates business logic.
+- **Infrastructure layer** (`infrastructure/`): Depends on domain layer. Contains adapters for external systems (API clients, repositories).
+- **Frameworks layer** (`frameworks_drivers/`): Depends on application layer (via DI). Contains framework-specific code (Discord bot).
+
+**Key Components:**
+- **AIServicePort**: Interface for AI service operations (chat completion, image analysis)
+- **ProcessUserTurn**: Handles message processing flow with conversation history
+- **ClearChannelHistory**: Clears conversation history for a channel
+- **CompositionRoot**: Central point for dependency injection
+
+**Image Handling:**
+- Images are extracted from Discord attachments (max 10MB each)
+- Size validation and logging for debugging
+- Multimodal messages formatted for OpenAI API
 
 ## Code Style Guidelines
 
@@ -331,6 +354,8 @@ The project uses Pydantic for configuration management. All environment variable
 - `OPENAI_MODEL`: Default model name (default: `gemma-3-27b-it-qat`)
 - `OPENAI_MAX_TOKENS`: Maximum tokens (default: `500`)
 - `OPENAI_TEMPERATURE`: Generation temperature (default: `0.7`)
+- `OPENAI_VISION_ENABLED`: Enable image analysis (default: `true`)
+- `OPENAI_VISION_MAX_IMAGES`: Max images per message (default: `4`)
 - `LOG_LEVEL`: Logging level (default: `INFO`)
 - `DEBUG`: Debug mode (default: `false`)
 

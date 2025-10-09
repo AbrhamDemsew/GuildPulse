@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from src.domain.channel.events import ConversationCleared, MessageAdded
 from src.domain.shared.domain_event import DomainEvent
@@ -38,7 +38,7 @@ class Channel:
         """Get all messages in the channel."""
         return self.messages.copy()
 
-    def get_messages_for_api(self) -> list[dict[str, str]]:
+    def get_messages_for_api(self) -> list[dict[str, Any]]:
         """Get messages as dictionaries for API consumption."""
         return [msg.to_dict() for msg in self.messages]
 

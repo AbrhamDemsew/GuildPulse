@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
@@ -20,19 +21,21 @@ class Channel:
     messages: list[Message] = field(default_factory=list)
     max_messages: int = 100
     _domain_events: list[DomainEvent] = field(default_factory=list, init=False, repr=False)
+    _lock: threading.Lock = field(default_factory=lambda: threading.Lock(), init=False, repr=False)
 
     def add_message(self, message: Message) -> None:
         """Add a message to the channel and record domain events."""
-        if self.max_messages <= 0:
-            return
-        self.messages.append(message)
-        if len(self.messages) > self.max_messages:
-            self.messages = self.messages[-self.max_messages :]
+        with self._lock:
+            if self.max_messages <= 0:
+                return
+            self.messages.append(message)
+            if len(self.messages) > self.max_messages:
+                self.messages = self.messages[-self.max_messages :]
 
-        # Record domain event
-        self._domain_events.append(
-            MessageAdded.from_channel(self, message.role, message.content.value or "")
-        )
+            # Record domain event
+            self._domain_events.append(
+                MessageAdded.from_channel(self, message.role, message.content.value or "")
+            )
 
     def get_messages(self) -> list[Message]:
         """Get all messages in the channel."""

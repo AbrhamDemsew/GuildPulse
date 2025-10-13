@@ -1,5 +1,4 @@
 """Domain events for the Channel aggregate."""
-
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -21,7 +20,7 @@ class MessageAdded:
     def from_channel(channel: "Channel", role: str, content: str) -> "MessageAdded":
         """Create a MessageAdded event from a channel."""
         return MessageAdded(
-            channel_id=channel.channel_id,
+            channel_id=channel.id,
             message_role=role,
             message_content=content,
             timestamp=datetime.now(),
@@ -40,7 +39,7 @@ class ConversationCleared:
     def from_channel(channel: "Channel", previous_count: int) -> "ConversationCleared":
         """Create a ConversationCleared event from a channel."""
         return ConversationCleared(
-            channel_id=channel.channel_id,
+            channel_id=channel.id,
             previous_message_count=previous_count,
             timestamp=datetime.now(),
         )

@@ -257,13 +257,17 @@ src/
 │   └── shared/                       # Shared domain entities
 ├── frameworks_drivers/               # Framework layer (Discord)
 │   └── discord/
-├── interface_adapters/               # Infrastructure layer
-│   └── openai/
 ├── application/                      # Application layer
-│   └── messaging/
+│   ├── messaging/
+│   │   ├── handlers.py               # Use case handlers
+│   │   └── ports.py                  # Application ports
+│   └── shared/
 └── infrastructure/                   # Infrastructure layer
     ├── ai/
+    │   └── openai/
+    ├── di/                           # Dependency injection
     └── persistence/
+        └── memory/
 ```
 
 See [Architecture Documentation](docs/ARCHITECTURE.md) for detailed architecture information.

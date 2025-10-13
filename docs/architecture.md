@@ -16,10 +16,6 @@ src/
 │   └── discord/
 │       ├── bot.py                    # Discord bot integration
 │       └── sync_commands.py          # Sync slash commands
-├── interface_adapters/               # API clients and adapters
-│   └── openai/
-│       ├── adapter.py                # OpenAI service adapter
-│       └── client.py                 # OpenAI API client
 ├── application/                      # Application layer
 │   ├── messaging/
 │   │   ├── handlers.py               # Use case handlers (ProcessUserTurn, ClearChannelHistory)
@@ -27,6 +23,9 @@ src/
 │   └── shared/                       # Shared application code
 └── infrastructure/                   # Infrastructure layer
     ├── ai/                           # AI infrastructure
+    │   └── openai/
+    │       ├── adapter.py            # OpenAI service adapter
+    │       └── client.py             # OpenAI API client
     ├── di/                           # Dependency injection
     │   └── composition_root.py       # Composition root for DI
     └── persistence/                  # Persistence layer
@@ -134,7 +133,7 @@ Dependencies flow inward, from outer layers to inner layers.
 - `ConfigPort`: Interface for configuration management
 - `RepositoryPort`: Interface for data persistence
 
-### Interface Adapters Layer (`interface_adapters/`)
+### AI Infrastructure Layer (`infrastructure/ai/`)
 
 **Purpose**: Adapters that connect the application to external systems.
 

@@ -281,7 +281,7 @@ if response is None:
 @pytest.fixture
 def mock_client():
     """Create a mock OpenAI client."""
-    with patch("src.interface_adapters.openai_client.OpenAI") as mock_openai:
+    with patch("src.infrastructure.ai.openai_client.OpenAI") as mock_openai:
         client = OpenAIClient(
             api_key="test_key",
             base_url="https://test.com/v1",

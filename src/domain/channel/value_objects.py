@@ -1,4 +1,5 @@
 """Value objects for the domain model."""
+from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -39,6 +40,11 @@ class MessageContent:
         return self.value
 
 
+def _generate_message_id() -> str:
+    """Generate a unique message ID."""
+    return str(id(object()))
+
+
 @dataclass(frozen=True)
 class Message:
     """Value object representing a message in a conversation."""
@@ -46,6 +52,7 @@ class Message:
     role: str
     content: MessageContent
     timestamp: datetime = field(default_factory=datetime.now)
+    id: str = field(default_factory=_generate_message_id)
 
     def __post_init__(self) -> None:
         """Validate message."""
@@ -66,3 +73,6 @@ class Message:
             other.role,
             other.content.value,
         )
+
+    def __hash__(self) -> int:
+        return hash((self.id, self.role, self.content.value))

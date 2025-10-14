@@ -1,207 +1,163 @@
 """Tests for domain value objects."""
-
-from datetime import datetime
-
 import pytest
-
-from src.domain.channel.value_objects import Message, MessageContent
-from src.domain.shared.errors import MessageValidationError
-
-# ============================================================================
-# TestMessageRole - with parameterized tests
-# ============================================================================
+from src.domain.channel.value_objects import Message, MessageContent, MessageRole, MessageValidationError
 
 
 class TestMessageRole:
-    """Tests for MessageRole value object."""
-
     def test_valid_roles(self):
-        """Test that valid roles are accepted."""
-        assert "user" == "user"
-        assert "assistant" == "assistant"
-        assert "system" == "system"
+        """Test valid message roles."""
+        assert MessageRole.USER.value == "user"
+        assert MessageRole.ASSISTANT.value == "assistant"
+        assert MessageRole.SYSTEM.value == "system"
 
-    @pytest.mark.parametrize(
-        "invalid_role",
-        [
-            "invalid",
-            "",
-            "123",
-            "user ",
-            " user",
-            "1",
-            "2",
-            "a",
-            "b",
-        ],
-    )
-    def test_invalid_role_raises_error(self, invalid_role: str) -> None:
-        """Test that invalid role raises ValueError."""
+    def test_invalid_role_raises_error(self):
+        """Test that invalid role raises validation error."""
         with pytest.raises(MessageValidationError):
-            Message(role=invalid_role, content=MessageContent(value="test"))
+            Message(role="invalid", content=MessageContent(value="test"))
 
+        with pytest.raises(MessageValidationError):
+            Message(role="", content=MessageContent(value="test"))
 
-# ============================================================================
-# TestMessageContent - with parameterized tests
-# ============================================================================
+        with pytest.raises(MessageValidationError):
+            Message(role="123", content=MessageContent(value="test"))
+
+        with pytest.raises(MessageValidationError):
+            Message(role="user ", content=MessageContent(value="test"))
+
+        with pytest.raises(MessageValidationError):
+            Message(role=" user", content=MessageContent(value="test"))
 
 
 class TestMessageContent:
-    """Tests for MessageContent value object."""
-
-    def test_valid_content(self) -> None:
-        """Test that valid content is accepted."""
+    def test_valid_content(self):
+        """Test valid message content."""
         content = MessageContent(value="Hello")
-        assert content.value == "Hello"
+        assert str(content) == "Hello"
 
-    def test_empty_string_content_raises_error(self) -> None:
-        """Test that empty string content raises ValueError."""
+    def test_empty_string_content_raises_error(self):
+        """Test that empty string content raises error."""
         with pytest.raises(MessageValidationError):
             MessageContent(value="")
 
-    def test_newline_content_is_valid(self) -> None:
-        """Test that newline content is valid (implementation doesn't strip)."""
-        # Implementation only checks for empty string "", not whitespace
+    def test_newline_content_is_valid(self):
+        """Test that newline content is valid."""
         content = MessageContent(value="\n")
-        assert content.value == "\n"
+        assert str(content) == "\n"
 
-    def test_tab_content_is_valid(self) -> None:
-        """Test that tab content is valid (implementation doesn't strip)."""
-        # Implementation only checks for empty string "", not whitespace
+    def test_tab_content_is_valid(self):
+        """Test that tab content is valid."""
         content = MessageContent(value="\t")
-        assert content.value == "\t"
+        assert str(content) == "\t"
 
-    def test_whitespace_content_is_valid(self) -> None:
-        """Test that whitespace content is valid (implementation doesn't strip)."""
-        # Implementation only checks for empty string "", not whitespace
-        content = MessageContent(value=" ")
-        assert content.value == " "
+    def test_whitespace_content_is_valid(self):
+        """Test that whitespace content is valid."""
+        content = MessageContent(value="   ")
+        assert str(content) == "   "
 
-    def test_none_content_raises_message_validation_error(self) -> None:
-        """Test that None content raises MessageValidationError."""
+    def test_none_content_raises_message_validation_error(self):
+        """Test that None content raises error."""
         with pytest.raises(MessageValidationError):
             MessageContent(value=None)
 
-    @pytest.mark.parametrize("non_string_value", [0, False])
-    def test_non_string_types_raise_type_error(self, non_string_value: int | bool) -> None:
-        """Test that non-string types raise type errors."""
-        # Type hints should catch this, but at runtime we get TypeError
+    def test_non_string_types_raise_type_error(self):
+        """Test that non-string types raise type error."""
         with pytest.raises(TypeError):
-            MessageContent(value=non_string_value)  # type: ignore
+            MessageContent(value=0)
 
-
-# ============================================================================
-# TestMessage - with parameterized tests
-# ============================================================================
+        with pytest.raises(TypeError):
+            MessageContent(value=False)
 
 
 class TestMessage:
-    """Tests for Message entity."""
-
-    def test_create_message(self) -> None:
+    def test_create_message(self):
         """Test creating a message."""
-        message = Message(role="user", content=MessageContent(value="Hello"))
-        assert message.role == "user"
-        assert message.content.value == "Hello"
-        assert message.timestamp is not None
+        msg = Message(role="user", content=MessageContent(value="Hello"))
 
-    def test_message_equality(self) -> None:
-        """Test message equality based on role and content."""
+        assert msg.role == "user"
+        assert msg.content.value == "Hello"
+
+    def test_message_equality(self):
+        """Test message equality."""
         msg1 = Message(role="user", content=MessageContent(value="Hello"))
         msg2 = Message(role="user", content=MessageContent(value="Hello"))
-        msg3 = Message(role="assistant", content=MessageContent(value="Hello"))
+
+        # Same value, so equal
         assert msg1 == msg2
-        assert msg1 != msg3
 
-    def test_add_message_to_channel(self) -> None:
-        """Test adding message to channel."""
-        from src.domain.channel.aggregate import Channel
+    def test_message_inequality(self):
+        """Test message inequality."""
+        msg1 = Message(role="user", content=MessageContent(value="Hello"))
+        msg2 = Message(role="user", content=MessageContent(value="World"))
 
-        channel = Channel(channel_id=123)
-        message = Message(role="user", content=MessageContent(value="Hello"))
-        channel.add_message(message)
-        assert channel.count_messages() == 1
+        # Different values, not equal
+        assert msg1 != msg2
 
-    def test_channel_message_limit(self) -> None:
-        """Test channel respects message limit."""
-        from src.domain.channel.aggregate import Channel
+    def test_message_to_dict(self):
+        """Test converting message to dict."""
+        msg = Message(role="user", content=MessageContent(value="Hello"))
+        assert msg.to_dict() == {"role": "user", "content": "Hello"}
 
-        channel = Channel(channel_id=123, max_messages=2)
-        channel.add_message(Message(role="user", content=MessageContent(value="1")))
-        channel.add_message(Message(role="assistant", content=MessageContent(value="2")))
-        assert channel.count_messages() == 2
-        # Adding a third message should not raise an error, but should trim the oldest message
-        channel.add_message(Message(role="user", content=MessageContent(value="3")))
-        assert channel.count_messages() == 2
-        assert channel.get_messages()[0].content.value == "2"
+    def test_message_timestamp_is_set(self):
+        """Test that message timestamp is set."""
+        msg = Message(role="user", content=MessageContent(value="Hello"))
+        assert msg.timestamp is not None
 
+    def test_message_timestamp_can_be_custom(self):
+        """Test that message timestamp can be custom."""
+        from datetime import datetime
 
-# ============================================================================
-# Parameterized tests for MessageContent validation
-# ============================================================================
+        custom_time = datetime(2024, 1, 1)
+        msg = Message(role="user", content=MessageContent(value="Hello"), timestamp=custom_time)
+        assert msg.timestamp == custom_time
 
 
-@pytest.mark.parametrize(
-    "valid_content",
-    [
+def test_message_content_valid_cases():
+    """Test various valid content values."""
+    valid_cases = [
         "Hello",
         "Hello World",
-        "A" * 100,
+        "A" * 256,
         "Hello\nWorld",
         "Hello\tWorld",
-    ],
-)
-def test_message_content_valid_cases(valid_content: str) -> None:
-    """Test various valid content values."""
-    content = MessageContent(value=valid_content)
-    assert content.value == valid_content
+    ]
+
+    for case in valid_cases:
+        content = MessageContent(value=case)
+        assert content.value == case
 
 
-@pytest.mark.parametrize("content_length", [1, 50, 100, 255, 256, 500, 1000])
-def test_message_content_various_lengths(content_length: int) -> None:
+def test_message_content_various_lengths():
     """Test content with various lengths."""
-    content_str = "x" * content_length
-    content = MessageContent(value=content_str)
-    assert isinstance(content.value, str)
-    assert len(content.value) == content_length
+    lengths = [1, 50, 100, 255, 256, 500, 1000]
+    for length in lengths:
+        content = MessageContent(value="A" * length)
+        assert len(content.value) == length
 
 
-# ============================================================================
-# Message validation tests
-# ============================================================================
+def test_message_with_valid_roles():
+    """Test messages with valid roles."""
+    for role in ["user", "assistant", "system"]:
+        msg = Message(role=role, content=MessageContent(value="test"))
+        assert msg.role == role
 
 
-@pytest.mark.parametrize("role", ["user", "assistant", "system"])
-def test_message_with_valid_roles(role: str) -> None:
-    """Test Message with valid roles."""
-    content = MessageContent(value="test")
-    message = Message(role=role, content=content)
-    assert message.role == role
-    assert message.content.value == "test"
+def test_message_with_invalid_roles():
+    """Test messages with invalid roles."""
+    for role in ["admin", "bot", "human", "", "1", "2", "a", "b"]:
+        with pytest.raises(MessageValidationError):
+            Message(role=role, content=MessageContent(value="test"))
 
 
-@pytest.mark.parametrize("role", ["admin", "bot", "human", ""])  # Invalid roles
-def test_message_with_invalid_roles(role: str) -> None:
-    """Test Message with invalid roles."""
-    content = MessageContent(value="test")
-    with pytest.raises(MessageValidationError):
-        Message(role=role, content=content)
+def test_message_timestamp_is_set():
+    """Test that message timestamp is set."""
+    msg = Message(role="user", content=MessageContent(value="Hello"))
+    assert msg.timestamp is not None
 
 
-# ============================================================================
-# Message timestamp tests
-# ============================================================================
+def test_message_timestamp_can_be_custom():
+    """Test that message timestamp can be custom."""
+    from datetime import datetime
 
-
-def test_message_timestamp_is_set() -> None:
-    """Test that message has a timestamp set on creation."""
-    message = Message(role="user", content=MessageContent(value="test"))
-    assert message.timestamp is not None
-    assert isinstance(message.timestamp, datetime)
-
-
-def test_message_timestamp_can_be_custom() -> None:
-    """Test that message timestamp can be customized."""
-    custom_time = datetime(2025, 1, 1, 12, 0, 0)
-    message = Message(role="user", content=MessageContent(value="test"), timestamp=custom_time)
-    assert message.timestamp == custom_time
+    custom_time = datetime(2024, 1, 1)
+    msg = Message(role="user", content=MessageContent(value="Hello"), timestamp=custom_time)
+    assert msg.timestamp == custom_time

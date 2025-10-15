@@ -1,45 +1,55 @@
 """Domain events for the Channel aggregate."""
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING
+
+from src.domain.shared.domain_event import DomainEvent
 
 if TYPE_CHECKING:
     from src.domain.channel.aggregate import Channel
 
 
 @dataclass(frozen=True)
-class MessageAdded:
+class MessageAdded(DomainEvent):
     """Event fired when a message is added to a channel."""
 
-    channel_id: int
     message_role: str
     message_content: str
-    timestamp: datetime
 
     @staticmethod
     def from_channel(channel: "Channel", role: str, content: str) -> "MessageAdded":
         """Create a MessageAdded event from a channel."""
         return MessageAdded(
-            channel_id=channel.id,
+            event_id=DomainEvent.generate_event_id(),
+            occurred_at=DomainEvent.now(),
+            aggregate_id=str(channel.id),
             message_role=role,
             message_content=content,
-            timestamp=datetime.now(),
         )
+
+    @property
+    def event_type(self) -> str:
+        return "channel.message.added"
 
 
 @dataclass(frozen=True)
-class ConversationCleared:
+class ConversationCleared(DomainEvent):
     """Event fired when a channel's conversation history is cleared."""
 
-    channel_id: int
     previous_message_count: int
-    timestamp: datetime
 
     @staticmethod
     def from_channel(channel: "Channel", previous_count: int) -> "ConversationCleared":
         """Create a ConversationCleared event from a channel."""
         return ConversationCleared(
-            channel_id=channel.id,
+            event_id=DomainEvent.generate_event_id(),
+            occurred_at=DomainEvent.now(),
+            aggregate_id=str(channel.id),
             previous_message_count=previous_count,
-            timestamp=datetime.now(),
         )
+
+    @property
+    def event_type(self) -> str:
+        return "channel.conversation.cleared"

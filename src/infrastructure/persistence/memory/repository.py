@@ -1,11 +1,11 @@
-"""In-memory implementation of MessageRepository."""
+"""In-memory implementation of ChannelRepository."""
 
+from src.application.ports.channel_repository_port import IChannelRepositoryPort
 from src.domain.channel.aggregate import Channel
-from src.domain.repository import MessageRepository
 from src.domain.shared.errors import ChannelNotFoundError
 
 
-class InMemoryMessageRepository(MessageRepository):
+class InMemoryChannelRepository(IChannelRepositoryPort):
     """In-memory repository for Channel persistence."""
 
     def __init__(self) -> None:
@@ -13,7 +13,7 @@ class InMemoryMessageRepository(MessageRepository):
 
     def save(self, channel: Channel) -> None:
         """Save a channel."""
-        self._channels[channel.channel_id] = channel
+        self._channels[channel.id] = channel
 
     def get(self, channel_id: int) -> Channel:
         """Get a channel by ID."""

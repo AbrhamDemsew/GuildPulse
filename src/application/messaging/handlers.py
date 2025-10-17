@@ -1,12 +1,11 @@
 """Use cases for messaging operations."""
-
 import logging
 
-from src.application.messaging.ports import AIServicePort
+from src.application.ports.ai_service_port import IAIServicePort
+from src.application.ports.channel_repository_port import IChannelRepositoryPort
 from src.config import get_settings
 from src.domain.channel.aggregate import Channel
 from src.domain.channel.value_objects import Message, MessageContent
-from src.domain.repository import MessageRepository
 from src.domain.shared.errors import ChannelNotFoundError, DomainError
 
 
@@ -15,8 +14,8 @@ class ProcessUserTurn:
 
     def __init__(
         self,
-        repo: MessageRepository,
-        ai_service: AIServicePort,
+        repo: IChannelRepositoryPort,
+        ai_service: IAIServicePort,
     ) -> None:
         self.repo = repo
         self.ai_service = ai_service
@@ -74,7 +73,7 @@ class ProcessUserTurn:
 class ClearChannelHistory:
     """Use case to clear a channel's conversation history."""
 
-    def __init__(self, repo: MessageRepository) -> None:
+    def __init__(self, repo: IChannelRepositoryPort) -> None:
         self.repo = repo
         self.logger = logging.getLogger(__name__)
 
@@ -88,7 +87,7 @@ class ClearChannelHistory:
                 self.logger.warning(f"Channel not found for channel_id {channel_id}")
                 return False
 
-            if not channel.messages:
+            if not channel.get_messages():
                 self.logger.info(f"Channel already empty for channel_id {channel_id}")
                 return False
 

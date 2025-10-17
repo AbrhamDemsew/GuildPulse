@@ -1,5 +1,5 @@
 """Infrastructure persistence package."""
 
-from src.infrastructure.persistence.memory.repository import InMemoryMessageRepository
+from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
 
-__all__ = ["InMemoryMessageRepository"]
+__all__ = ["InMemoryChannelRepository"]

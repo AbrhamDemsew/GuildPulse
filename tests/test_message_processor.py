@@ -10,7 +10,7 @@ from src.application.messaging.handlers import ProcessUserTurn
 from src.domain.channel.value_objects import Message, MessageContent
 from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
 from src.infrastructure.ai.openai.client import OpenAIClient
-from src.infrastructure.persistence.memory.repository import InMemoryMessageRepository
+from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
 
 
 @pytest.fixture
@@ -57,7 +57,7 @@ def message_processor() -> Any:
             temperature=0.5,
         )
         ai_service = OpenAIServiceAdapter(client)
-        repo = InMemoryMessageRepository()
+        repo = InMemoryChannelRepository()
         return ProcessUserTurn(repo, ai_service)
 
 

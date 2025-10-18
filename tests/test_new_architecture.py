@@ -11,7 +11,7 @@ from src.domain.channel.aggregate import Channel
 from src.domain.channel.value_objects import Message, MessageContent
 from src.domain.shared.errors import MessageValidationError
 from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
-from src.infrastructure.persistence.memory.repository import InMemoryMessageRepository
+from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
 
 
 @pytest.fixture
@@ -33,13 +33,13 @@ def test_channel():
 def test_channel_creation():
     """Test channel creation."""
     channel = Channel(channel_id=123)
-    assert channel.channel_id == 123
+    assert channel.id == 123
     assert channel.count_messages() == 0
 
 
 def test_process_user_turn(mock_ai_service: Any) -> Any:
     """Test ProcessUserTurn use case."""
-    repo = InMemoryMessageRepository()
+    repo = InMemoryChannelRepository()
     processor = ProcessUserTurn(repo, mock_ai_service)
     result = processor.execute(channel_id=123, user_content="Hello")
     assert result == "Test response"
@@ -47,7 +47,7 @@ def test_process_user_turn(mock_ai_service: Any) -> Any:
 
 def test_process_user_turn_channel_exists(mock_ai_service: Any) -> Any:
     """Test ProcessUserTurn with existing channel."""
-    repo = InMemoryMessageRepository()
+    repo = InMemoryChannelRepository()
     processor = ProcessUserTurn(repo, mock_ai_service)
     channel = repo.get_or_create(456)
     channel.add_message(Message(role="user", content=MessageContent(value="Existing")))
@@ -125,18 +125,18 @@ def test_message_content_validation():
 
 def test_in_memory_repository():
     """Test in-memory repository."""
-    repo = InMemoryMessageRepository()
+    repo = InMemoryChannelRepository()
     channel = Channel(channel_id=123)
     repo.save(channel)
     retrieved = repo.get(123)
-    assert retrieved.channel_id == 123
+    assert retrieved.id == 123
 
 
 def test_in_memory_repository_not_found():
     """Test repository error handling."""
     from src.domain.shared.errors import ChannelNotFoundError
 
-    repo = InMemoryMessageRepository()
+    repo = InMemoryChannelRepository()
     with pytest.raises(ChannelNotFoundError):
         repo.get(999)
 
@@ -164,7 +164,7 @@ class TestRepositoryEdgeCases:
 
     def test_repository_get_or_create_with_messages(self):
         """Test get_or_create preserves messages."""
-        repo = InMemoryMessageRepository()
+        repo = InMemoryChannelRepository()
         channel = Channel(channel_id=123)
         channel.add_message(Message(role="user", content=MessageContent(value="Existing")))
         repo.save(channel)
@@ -174,7 +174,7 @@ class TestRepositoryEdgeCases:
 
     def test_repository_multiple_channels(self):
         """Test handling multiple channels."""
-        repo = InMemoryMessageRepository()
+        repo = InMemoryChannelRepository()
 
         for i in range(5):
             channel = Channel(channel_id=i)
@@ -183,7 +183,7 @@ class TestRepositoryEdgeCases:
 
         for i in range(5):
             retrieved = repo.get(i)
-            assert retrieved.channel_id == i
+            assert retrieved.id == i
             assert retrieved.count_messages() == 1
 
 
@@ -192,14 +192,14 @@ class TestMessageProcessingEdgeCases:
 
     def test_process_user_turn_with_empty_content(self, mock_ai_service: Any) -> Any:
         """Test processing empty user content."""
-        repo = InMemoryMessageRepository()
+        repo = InMemoryChannelRepository()
         processor = ProcessUserTurn(repo, mock_ai_service)
         result = processor.execute(channel_id=123, user_content="")
         assert result == "Test response"
 
     def test_process_user_turn_with_long_content(self, mock_ai_service: Any) -> Any:
         """Test processing long user content."""
-        repo = InMemoryMessageRepository()
+        repo = InMemoryChannelRepository()
         processor = ProcessUserTurn(repo, mock_ai_service)
         long_content = "x" * 1000
         result = processor.execute(channel_id=123, user_content=long_content)

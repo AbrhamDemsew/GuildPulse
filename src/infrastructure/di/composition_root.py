@@ -1,11 +1,12 @@
 """Dependency injection composition root."""
 
 from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
+from src.application.ports.ai_service_port import IAIServicePort
+from src.application.ports.channel_repository_port import IChannelRepositoryPort
 from src.config import Settings
-from src.domain.repository import MessageRepository
 from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
 from src.infrastructure.ai.openai.client import OpenAIClient
-from src.infrastructure.persistence.memory.repository import InMemoryMessageRepository
+from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
 
 
 class CompositionRoot:
@@ -14,18 +15,18 @@ class CompositionRoot:
     def __init__(self, config: Settings) -> None:
         """Initialize composition root with configuration."""
         self.config = config
-        self._repo: MessageRepository | None = None
-        self._ai_service: OpenAIServiceAdapter | None = None
+        self._repo: IChannelRepositoryPort | None = None
+        self._ai_service: IAIServicePort | None = None
 
     @property
-    def repo(self) -> MessageRepository:
-        """Get or create message repository."""
+    def repo(self) -> IChannelRepositoryPort:
+        """Get or create channel repository."""
         if self._repo is None:
-            self._repo = InMemoryMessageRepository()
+            self._repo = InMemoryChannelRepository()
         return self._repo
 
     @property
-    def ai_service(self) -> OpenAIServiceAdapter:
+    def ai_service(self) -> IAIServicePort:
         """Get or create AI service adapter."""
         if self._ai_service is None:
             client = OpenAIClient(

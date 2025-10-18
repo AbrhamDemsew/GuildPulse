@@ -118,7 +118,7 @@ class TestCompositionRoot:
         channel1 = processor.repo.get(1)
         channel2 = processor.repo.get(2)
 
-        assert len(channel1.messages) == 2  # user + bot
-        assert len(channel2.messages) == 2
-        assert channel1.messages[0].content.value == "User: Channel 1"
-        assert channel2.messages[0].content.value == "User: Channel 2"
+        assert len(channel1.get_messages()) == 2  # user + bot
+        assert len(channel2.get_messages()) == 2
+        assert channel1.get_messages()[0].content.value == "User: Channel 1"
+        assert channel2.get_messages()[0].content.value == "User: Channel 2"

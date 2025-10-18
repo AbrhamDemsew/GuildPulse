@@ -165,10 +165,10 @@ def process_user_turn(mock_ai_adapter: mock.Mock) -> Any:
     """Create a ProcessUserTurn instance."""
     from src.application.messaging.handlers import ProcessUserTurn
     from src.infrastructure.persistence.memory.repository import (
-        InMemoryMessageRepository,
+        InMemoryChannelRepository,
     )
 
-    repo = InMemoryMessageRepository()
+    repo = InMemoryChannelRepository()
     return ProcessUserTurn(repo, mock_ai_adapter)
 
 
@@ -177,10 +177,10 @@ def clear_channel_history() -> Any:
     """Create a ClearChannelHistory instance."""
     from src.application.messaging.handlers import ClearChannelHistory
     from src.infrastructure.persistence.memory.repository import (
-        InMemoryMessageRepository,
+        InMemoryChannelRepository,
     )
 
-    repo = InMemoryMessageRepository()
+    repo = InMemoryChannelRepository()
     return ClearChannelHistory(repo)
 
 

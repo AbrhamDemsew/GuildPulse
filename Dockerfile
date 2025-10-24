@@ -8,9 +8,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install
+# Copy requirements and install with BuildKit cache
 COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync
 
 # Stage 2: Runtime stage
 FROM python:3.14-slim

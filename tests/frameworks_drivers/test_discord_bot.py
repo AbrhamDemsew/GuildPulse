@@ -183,6 +183,9 @@ class TestHandleMessageProcessing:
         mock_lock.__aenter__ = AsyncMock()
         mock_lock.__aexit__ = AsyncMock()
 
+        mock_rate_limiter = Mock()
+        mock_rate_limiter.can_proceed.return_value = True
+
         def to_thread_sync(func: Any, *args: Any, **kwargs: Any) -> Any:
             """Synchronous wrapper for to_thread."""
             return func(*args, **kwargs)
@@ -191,7 +194,7 @@ class TestHandleMessageProcessing:
             "src.frameworks_drivers.discord.bot.asyncio.to_thread",
             side_effect=to_thread_sync,
         ):
-            await handle_message_processing(mock_message, mock_processor, mock_bot, mock_lock)
+            await handle_message_processing(mock_message, mock_processor, mock_bot, mock_lock, rate_limiter=mock_rate_limiter)
 
         assert mock_processor.execute.called
 
@@ -233,7 +236,7 @@ class TestHandleMessageProcessing:
             "src.frameworks_drivers.discord.bot.asyncio.to_thread",
             side_effect=to_thread_sync,
         ):
-            await handle_message_processing(mock_message, mock_processor, mock_bot, mock_lock)
+            await handle_message_processing(mock_message, mock_processor, mock_bot, mock_lock, rate_limiter=Mock())
 
         assert mock_processor.execute.called
 
@@ -269,7 +272,7 @@ class TestHandleMessageProcessing:
             "src.frameworks_drivers.discord.bot.asyncio.to_thread",
             side_effect=to_thread_sync,
         ):
-            await handle_message_processing(mock_message, mock_processor, mock_bot, mock_lock)
+            await handle_message_processing(mock_message, mock_processor, mock_bot, mock_lock, rate_limiter=Mock())
 
         assert mock_processor.execute.called
 

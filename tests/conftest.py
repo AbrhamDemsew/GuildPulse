@@ -54,7 +54,7 @@ def channel_factory() -> Generator[Any, None, None]:
     """
 
     def create_channel(channel_id: int = 123, max_messages: int = 100) -> Channel:
-        return Channel(channel_id=channel_id, max_messages=max_messages)
+        return Channel(id=channel_id, max_messages=max_messages)
 
     yield create_channel
     # Cleanup if needed
@@ -63,7 +63,7 @@ def channel_factory() -> Generator[Any, None, None]:
 @pytest.fixture
 def sample_channel() -> Channel:
     """Create a sample channel with messages."""
-    channel = Channel(channel_id=999, max_messages=3)
+    channel = Channel(id=999, max_messages=3)
     channel.add_message(Message(role="user", content=MessageContent(value="First")))
     channel.add_message(Message(role="assistant", content=MessageContent(value="Second")))
     return channel
@@ -72,13 +72,13 @@ def sample_channel() -> Channel:
 @pytest.fixture
 def empty_channel() -> Channel:
     """Create an empty channel."""
-    return Channel(channel_id=0, max_messages=100)
+    return Channel(id=0, max_messages=100)
 
 
 @pytest.fixture
 def channel_with_many_messages() -> Channel:
     """Create a channel with many messages (100+)."""
-    channel = Channel(channel_id=888, max_messages=200)
+    channel = Channel(id=888, max_messages=200)
     for i in range(150):
         channel.add_message(Message(role="user", content=MessageContent(value=f"Message {i}")))
     return channel
@@ -214,7 +214,7 @@ def temp_file_content() -> Generator[str, None, None]:
     """Provide a temporary file path for file operations."""
     import tempfile
 
-    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as f:
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as f:
         f.write("test content")
         temp_path = f.name
 

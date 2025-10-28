@@ -24,5 +24,5 @@ class InMemoryChannelRepository(IChannelRepositoryPort):
     def get_or_create(self, channel_id: int) -> Channel:
         """Get existing channel or create a new one."""
         if channel_id not in self._channels:
-            self._channels[channel_id] = Channel(channel_id=channel_id)
+            self._channels[channel_id] = Channel(id=channel_id)
         return self._channels[channel_id]

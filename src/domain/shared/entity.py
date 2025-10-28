@@ -1,4 +1,5 @@
 """Base class for entities with identity."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

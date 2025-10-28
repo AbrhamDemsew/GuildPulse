@@ -1,4 +1,5 @@
 """Protocol for AI service operations."""
+
 from typing import Protocol
 
 from src.domain.channel.aggregate import Channel

@@ -194,7 +194,9 @@ class TestHandleMessageProcessing:
             "src.frameworks_drivers.discord.bot.asyncio.to_thread",
             side_effect=to_thread_sync,
         ):
-            await handle_message_processing(mock_message, mock_processor, mock_bot, mock_lock, rate_limiter=mock_rate_limiter)
+            await handle_message_processing(
+                mock_message, mock_processor, mock_bot, mock_lock, rate_limiter=mock_rate_limiter
+            )
 
         assert mock_processor.execute.called
 
@@ -236,7 +238,9 @@ class TestHandleMessageProcessing:
             "src.frameworks_drivers.discord.bot.asyncio.to_thread",
             side_effect=to_thread_sync,
         ):
-            await handle_message_processing(mock_message, mock_processor, mock_bot, mock_lock, rate_limiter=Mock())
+            await handle_message_processing(
+                mock_message, mock_processor, mock_bot, mock_lock, rate_limiter=Mock()
+            )
 
         assert mock_processor.execute.called
 
@@ -272,7 +276,9 @@ class TestHandleMessageProcessing:
             "src.frameworks_drivers.discord.bot.asyncio.to_thread",
             side_effect=to_thread_sync,
         ):
-            await handle_message_processing(mock_message, mock_processor, mock_bot, mock_lock, rate_limiter=Mock())
+            await handle_message_processing(
+                mock_message, mock_processor, mock_bot, mock_lock, rate_limiter=Mock()
+            )
 
         assert mock_processor.execute.called
 

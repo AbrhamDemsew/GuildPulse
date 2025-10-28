@@ -1,4 +1,5 @@
 """Protocol for configuration access."""
+
 from typing import Protocol
 
 

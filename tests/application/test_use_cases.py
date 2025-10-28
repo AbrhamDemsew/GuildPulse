@@ -209,7 +209,7 @@ class TestClearChannelHistory:
     def test_clear_channel_history_already_empty(self):
         """Test clearing empty channel."""
         repo = InMemoryChannelRepository()
-        repo.save(Channel(channel_id=123))
+        repo.save(Channel(id=123))
         use_case = ClearChannelHistory(repo)
 
         result = use_case.execute(channel_id=123)
@@ -219,7 +219,7 @@ class TestClearChannelHistory:
     def test_clear_channel_history_logging(self):
         """Test that ClearChannelHistory logs correctly."""
         repo = InMemoryChannelRepository()
-        channel = Channel(channel_id=123)
+        channel = Channel(id=123)
 
         channel.add_message(Message(role="user", content=MessageContent(value="test")))
         repo.save(channel)
@@ -235,7 +235,7 @@ class TestClearChannelHistory:
     def test_clear_channel_history_generic_exception(self):
         """Test ClearChannelHistory with unexpected exception."""
         repo = InMemoryChannelRepository()
-        channel = Channel(channel_id=123)
+        channel = Channel(id=123)
         repo.save(channel)
 
         use_case = ClearChannelHistory(repo)

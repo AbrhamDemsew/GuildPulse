@@ -29,9 +29,9 @@ class TestOpenAIAdapterEdgeCases:
         """Test adapter adds system prompt correctly."""
         mock_client.chat_completion.return_value = "Response"
         channel = Channel(id=123)
-        
+
         adapter.generate_reply(channel, image_urls=())
-        
+
         # Verify system prompt is first in messages
         call_args = mock_client.chat_completion.call_args[0][0]
         assert call_args[0]["role"] == "system"
@@ -40,16 +40,18 @@ class TestOpenAIAdapterEdgeCases:
         """Test adapter truncates conversation to 100 messages."""
         mock_client.chat_completion.return_value = "Response"
         channel = Channel(id=123, max_messages=150)
-        
+
         # Add 150 messages
         for i in range(150):
-            channel.add_message(Message(
-                role="user" if i % 2 == 0 else "assistant",
-                content=MessageContent(value=f"Message {i}")
-            ))
-        
+            channel.add_message(
+                Message(
+                    role="user" if i % 2 == 0 else "assistant",
+                    content=MessageContent(value=f"Message {i}"),
+                )
+            )
+
         adapter.generate_reply(channel, image_urls=())
-        
+
         # Verify only last 100 messages are sent
         call_args = mock_client.chat_completion.call_args[0][0]
         assert len(call_args) == 101  # 100 messages + system prompt
@@ -58,9 +60,9 @@ class TestOpenAIAdapterEdgeCases:
         """Test adapter handles empty channel gracefully."""
         mock_client.chat_completion.return_value = "Response"
         channel = Channel(id=123)
-        
+
         result = adapter.generate_reply(channel, image_urls=())
-        
+
         assert result == "Response"
         call_args = mock_client.chat_completion.call_args[0][0]
         assert len(call_args) == 1  # Only system prompt
@@ -69,13 +71,12 @@ class TestOpenAIAdapterEdgeCases:
         """Test adapter preserves user message when images are present."""
         mock_client.chat_completion.return_value = "Response"
         channel = Channel(id=123)
-        channel.add_message(Message(
-            role="user",
-            content=MessageContent(value="What's in this image?")
-        ))
-        
+        channel.add_message(
+            Message(role="user", content=MessageContent(value="What's in this image?"))
+        )
+
         adapter.generate_reply(channel, image_urls=("https://example.com/img.jpg",))
-        
+
         call_args = mock_client.chat_completion.call_args[0][0]
         # Find the user message
         user_msg = next(m for m in call_args if m["role"] == "user")
@@ -86,8 +87,8 @@ class TestOpenAIAdapterEdgeCases:
         """Test adapter respects max_tokens from client."""
         mock_client.chat_completion.return_value = "Response"
         channel = Channel(id=123)
-        
+
         adapter.generate_reply(channel, image_urls=())
-        
+
         # Verify client was called
         assert mock_client.chat_completion.called

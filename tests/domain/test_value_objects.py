@@ -1,6 +1,12 @@
 """Tests for domain value objects."""
+
 import pytest
-from src.domain.channel.value_objects import Message, MessageContent, MessageRole, MessageValidationError
+from src.domain.channel.value_objects import (
+    Message,
+    MessageContent,
+    MessageRole,
+    MessageValidationError,
+)
 
 
 class TestMessageRole:
@@ -11,16 +17,19 @@ class TestMessageRole:
         assert MessageRole.SYSTEM.value == "system"
 
 
-@pytest.mark.parametrize("role,expected", [
-    ("user", True),
-    ("assistant", True),
-    ("system", True),
-    ("invalid", False),
-    ("", False),
-    ("123", False),
-    ("user ", False),
-    (" user", False),
-])
+@pytest.mark.parametrize(
+    "role,expected",
+    [
+        ("user", True),
+        ("assistant", True),
+        ("system", True),
+        ("invalid", False),
+        ("", False),
+        ("123", False),
+        ("user ", False),
+        (" user", False),
+    ],
+)
 def test_message_role_validation(role, expected):
     """Test message role validation with parameterized test."""
     if expected:
@@ -56,15 +65,18 @@ class TestMessageContent:
             MessageContent(value=False)
 
 
-@pytest.mark.parametrize("content,expected", [
-    ("Hello", True),
-    ("Hello World", True),
-    ("A" * 256, True),
-    ("Hello\nWorld", True),
-    ("Hello\tWorld", True),
-    ("", False),
-    (None, False),
-])
+@pytest.mark.parametrize(
+    "content,expected",
+    [
+        ("Hello", True),
+        ("Hello World", True),
+        ("A" * 256, True),
+        ("Hello\nWorld", True),
+        ("Hello\tWorld", True),
+        ("", False),
+        (None, False),
+    ],
+)
 def test_message_content_validation(content, expected):
     """Test MessageContent validation with parameterized test."""
     if expected:
@@ -75,17 +87,20 @@ def test_message_content_validation(content, expected):
             MessageContent(value=content)
 
 
-@pytest.mark.parametrize("length,expected", [
-    (1, True),
-    (50, True),
-    (100, True),
-    (255, True),
-    (256, True),
-    (500, True),
-    (1000, True),
-    (10000, True),
-    (10001, False),
-])
+@pytest.mark.parametrize(
+    "length,expected",
+    [
+        (1, True),
+        (50, True),
+        (100, True),
+        (255, True),
+        (256, True),
+        (500, True),
+        (1000, True),
+        (10000, True),
+        (10001, False),
+    ],
+)
 def test_message_content_length_validation(length, expected):
     """Test MessageContent length validation with parameterized test."""
     content = "A" * length
@@ -152,13 +167,16 @@ def test_message_with_invalid_roles(role):
         Message(role=role, content=MessageContent(value="test"))
 
 
-@pytest.mark.parametrize("content", [
-    "Hello",
-    "Hello World",
-    "A" * 256,
-    "Hello\nWorld",
-    "Hello\tWorld",
-])
+@pytest.mark.parametrize(
+    "content",
+    [
+        "Hello",
+        "Hello World",
+        "A" * 256,
+        "Hello\nWorld",
+        "Hello\tWorld",
+    ],
+)
 def test_message_content_valid_cases(content):
     """Test various valid content values using parameterized test."""
     content_obj = MessageContent(value=content)

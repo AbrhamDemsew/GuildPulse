@@ -1,4 +1,5 @@
 """Channel aggregate for managing conversation history."""
+
 from __future__ import annotations
 
 import threading
@@ -7,7 +8,6 @@ from typing import TYPE_CHECKING, Any
 
 from src.domain.channel.events import ConversationCleared, MessageAdded
 from src.domain.shared.aggregate_root import AggregateRoot
-from src.domain.shared.domain_event import DomainEvent
 
 if TYPE_CHECKING:
     from src.domain.channel.value_objects import Message
@@ -18,13 +18,8 @@ class Channel(AggregateRoot[int]):
     """Aggregate root for channel conversations."""
 
     max_messages: int = 100
-
-    def __init__(self, channel_id: int, max_messages: int = 100):
-        super().__init__(channel_id)
-        object.__setattr__(self, 'max_messages', max_messages)
-        object.__setattr__(self, '_messages', [])
-        object.__setattr__(self, '_domain_events', [])
-        object.__setattr__(self, '_lock', threading.Lock())
+    _messages: list[Message] = field(default_factory=list, init=False, repr=False)
+    _lock: threading.Lock = field(default_factory=threading.Lock, init=False)
 
     def add_message(self, message: Message) -> None:
         """Add a message to the channel and record domain events."""

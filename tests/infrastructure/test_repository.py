@@ -20,7 +20,7 @@ class TestInMemoryChannelRepository:
     def test_save_channel(self):
         """Test saving a channel."""
         repo = InMemoryChannelRepository()
-        channel = Channel(channel_id=123)
+        channel = Channel(id=123)
         repo.save(channel)
 
         assert repo.get(123).id == 123
@@ -28,7 +28,7 @@ class TestInMemoryChannelRepository:
     def test_get_channel(self):
         """Test getting a channel by ID."""
         repo = InMemoryChannelRepository()
-        channel = Channel(channel_id=456)
+        channel = Channel(id=456)
         repo.save(channel)
 
         retrieved = repo.get(456)
@@ -58,7 +58,7 @@ class TestInMemoryChannelRepository:
     def test_get_or_create_existing_channel(self):
         """Test getting existing channel with get_or_create."""
         repo = InMemoryChannelRepository()
-        original_channel = Channel(channel_id=456, max_messages=50)
+        original_channel = Channel(id=456, max_messages=50)
         repo.save(original_channel)
 
         retrieved_channel = repo.get_or_create(456)
@@ -70,8 +70,8 @@ class TestInMemoryChannelRepository:
     def test_save_overwrite_channel(self):
         """Test that saving same channel ID overwrites."""
         repo = InMemoryChannelRepository()
-        channel1 = Channel(channel_id=123)
-        channel2 = Channel(channel_id=123, max_messages=100)
+        channel1 = Channel(id=123)
+        channel2 = Channel(id=123, max_messages=100)
 
         repo.save(channel1)
         repo.save(channel2)
@@ -84,9 +84,9 @@ class TestInMemoryChannelRepository:
         """Test handling multiple channels."""
         repo = InMemoryChannelRepository()
 
-        repo.save(Channel(channel_id=1))
-        repo.save(Channel(channel_id=2))
-        repo.save(Channel(channel_id=3))
+        repo.save(Channel(id=1))
+        repo.save(Channel(id=2))
+        repo.save(Channel(id=3))
 
         assert repo.get(1).id == 1
         assert repo.get(2).id == 2
@@ -99,7 +99,7 @@ class TestRepositoryEdgeCases:
     def test_channel_id_zero(self):
         """Test using channel_id=0."""
         repo = InMemoryChannelRepository()
-        channel = Channel(channel_id=0)
+        channel = Channel(id=0)
         repo.save(channel)
 
         assert repo.get(0).id == 0
@@ -107,7 +107,7 @@ class TestRepositoryEdgeCases:
     def test_channel_id_large_number(self):
         """Test using large channel ID."""
         repo = InMemoryChannelRepository()
-        channel = Channel(channel_id=999999999)
+        channel = Channel(id=999999999)
         repo.save(channel)
 
         assert repo.get(999999999).id == 999999999

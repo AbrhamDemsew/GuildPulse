@@ -1,4 +1,5 @@
 """Base class for immutable value objects."""
+
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Generic, TypeVar

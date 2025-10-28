@@ -1,7 +1,8 @@
 """Base class for aggregate roots."""
+
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, List, TypeVar
+from typing import List, TypeVar
 
 from src.domain.shared.entity import Entity
 from src.domain.shared.domain_event import DomainEvent

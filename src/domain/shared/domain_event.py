@@ -1,9 +1,9 @@
 """Domain events base class."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Protocol
 
 
 @dataclass(frozen=True)
@@ -18,6 +18,7 @@ class DomainEvent:
     def generate_event_id() -> str:
         """Generate unique event ID."""
         import uuid
+
         return str(uuid.uuid4())
 
     @staticmethod

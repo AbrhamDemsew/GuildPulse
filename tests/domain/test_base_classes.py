@@ -1,4 +1,5 @@
 """Tests for domain base classes."""
+
 import pytest
 from src.domain.shared.entity import Entity
 from src.domain.shared.value_object import ValueObject
@@ -84,11 +85,7 @@ class TestAggregateRoot:
                 self.value = "test"
 
         agg = TestAggregate("agg-1")
-        event = DomainEvent(
-            event_id="evt-1",
-            occurred_at=DomainEvent.now(),
-            aggregate_id="agg-1"
-        )
+        event = DomainEvent(event_id="evt-1", occurred_at=DomainEvent.now(), aggregate_id="agg-1")
         agg.add_domain_event(event)
 
         assert len(agg.domain_events) == 1
@@ -101,11 +98,7 @@ class TestAggregateRoot:
                 self.value = "test"
 
         agg = TestAggregate("agg-1")
-        event = DomainEvent(
-            event_id="evt-1",
-            occurred_at=DomainEvent.now(),
-            aggregate_id="agg-1"
-        )
+        event = DomainEvent(event_id="evt-1", occurred_at=DomainEvent.now(), aggregate_id="agg-1")
         agg.add_domain_event(event)
 
         agg.clear_domain_events()
@@ -114,11 +107,7 @@ class TestAggregateRoot:
 
 class TestDomainEvent:
     def test_domain_event_has_timestamp(self):
-        event = DomainEvent(
-            event_id="evt-1",
-            occurred_at=DomainEvent.now(),
-            aggregate_id="agg-1"
-        )
+        event = DomainEvent(event_id="evt-1", occurred_at=DomainEvent.now(), aggregate_id="agg-1")
 
         assert event.event_id is not None
         assert event.occurred_at is not None
@@ -128,12 +117,12 @@ class TestDomainEvent:
         event1 = DomainEvent(
             event_id=DomainEvent.generate_event_id(),
             occurred_at=DomainEvent.now(),
-            aggregate_id="agg-1"
+            aggregate_id="agg-1",
         )
         event2 = DomainEvent(
             event_id=DomainEvent.generate_event_id(),
             occurred_at=DomainEvent.now(),
-            aggregate_id="agg-1"
+            aggregate_id="agg-1",
         )
 
         assert event1.event_id != event2.event_id

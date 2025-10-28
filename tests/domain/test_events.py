@@ -1,5 +1,5 @@
 """Tests for domain events."""
-import pytest
+
 from src.domain.channel.aggregate import Channel
 from src.domain.channel.events import MessageAdded, ConversationCleared
 from src.domain.channel.value_objects import Message, MessageContent
@@ -8,7 +8,7 @@ from src.domain.shared.domain_event import DomainEvent
 
 def test_message_added_event_creation():
     """Test MessageAdded event creation."""
-    channel = Channel(channel_id=999)
+    channel = Channel(id=999)
     channel.add_message(Message(role="user", content=MessageContent(value="Hello")))
 
     events = channel.domain_events
@@ -26,7 +26,7 @@ def test_message_added_event_creation():
 
 def test_conversation_cleared_event_creation():
     """Test ConversationCleared event creation."""
-    channel = Channel(channel_id=888)
+    channel = Channel(id=888)
     channel.add_message(Message(role="user", content=MessageContent(value="Message 1")))
     channel.add_message(Message(role="user", content=MessageContent(value="Message 2")))
     channel.clear()

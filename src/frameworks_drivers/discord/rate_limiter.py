@@ -15,10 +15,10 @@ class RateLimiter:
     def can_proceed(self) -> bool:
         """Check if a request can proceed."""
         self._cleanup_old_timestamps()
-        
+
         if len(self._timestamps) >= self.max_requests:
             return False
-        
+
         self._timestamps.append(time.time())
         return True
 
@@ -40,7 +40,7 @@ class RateLimiter:
             else:
                 # All timestamps expired, clean them up
                 self._cleanup_old_timestamps()
-        
+
         # Ensure we add a timestamp after wait
         self._timestamps.append(time.time())
 
@@ -53,7 +53,7 @@ class RateLimiter:
         """Get time to wait until next slot is available."""
         if not self._timestamps:
             return 0
-        
+
         oldest = min(self._timestamps)
         wait_time = (oldest + self.time_window) - time.time()
         return max(0, wait_time)

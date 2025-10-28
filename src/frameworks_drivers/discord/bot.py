@@ -14,9 +14,13 @@ from discord.ui import Button, View, button
 
 from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
 from src.config import setup_logging
+from src.frameworks_drivers.discord.rate_limiter import RateLimiter
 from src.infrastructure.di.composition_root import CompositionRoot
 
 logger = logging.getLogger(__name__)
+
+# Global rate limiter (5 messages per second for Discord)
+rate_limiter = RateLimiter(max_requests=5, time_window=1.0)
 
 
 class ConfirmClearView(View):
@@ -78,8 +82,13 @@ async def handle_message_processing(
     message_processor: ProcessUserTurn,
     bot: commands.Bot,
     lock: asyncio.Lock,
+    rate_limiter: RateLimiter,
 ) -> None:
     """Handle message processing for bot responses."""
+    if not rate_limiter.can_proceed():
+        await message.channel.send("Rate limit exceeded. Please wait before sending more messages.")
+        return
+
     channel_id = message.channel.id
     async with lock:
         try:
@@ -204,7 +213,7 @@ def setup_discord_bot() -> commands.Bot:
             return
 
         lock = get_lock(message.channel.id)
-        await handle_message_processing(message, message_processor, bot, lock)
+        await handle_message_processing(message, message_processor, bot, lock, rate_limiter)
 
     @bot.tree.command(name="help", description="Show help information")
     async def help_command(interaction: discord.Interaction) -> None:  # type: ignore[unused-function]  # Called by discord.py client at runtime

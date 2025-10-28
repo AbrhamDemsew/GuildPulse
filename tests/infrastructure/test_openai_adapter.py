@@ -19,7 +19,7 @@ class TestOpenAIServiceAdapter:
         mock_client.chat_completion.return_value = "Test reply"
 
         adapter = OpenAIServiceAdapter(mock_client)
-        channel = Channel(channel_id=123)
+        channel = Channel(id=123)
 
         result = adapter.generate_reply(channel)
 
@@ -32,7 +32,7 @@ class TestOpenAIServiceAdapter:
         mock_client.chat_completion.return_value = "Test reply"
 
         adapter = OpenAIServiceAdapter(mock_client)
-        channel = Channel(channel_id=123)
+        channel = Channel(id=123)
 
         adapter.generate_reply(channel)
 
@@ -46,7 +46,7 @@ class TestOpenAIServiceAdapter:
         mock_client.chat_completion.return_value = "Test reply"
 
         adapter = OpenAIServiceAdapter(mock_client)
-        channel = Channel(channel_id=123)
+        channel = Channel(id=123)
         channel.add_message(Message(role="user", content=MessageContent(value="Hello")))
         channel.add_message(Message(role="assistant", content=MessageContent(value="Hi")))
 
@@ -65,7 +65,7 @@ class TestOpenAIServiceAdapter:
         mock_client.chat_completion.return_value = "Test reply"
 
         adapter = OpenAIServiceAdapter(mock_client)
-        channel = Channel(channel_id=123, max_messages=200)
+        channel = Channel(id=123, max_messages=200)
 
         for i in range(150):
             channel.add_message(Message(role="user", content=MessageContent(value=f"Message {i}")))
@@ -81,7 +81,7 @@ class TestOpenAIServiceAdapter:
         mock_client.chat_completion.return_value = "Image response"
 
         adapter = OpenAIServiceAdapter(mock_client)
-        channel = Channel(channel_id=123)
+        channel = Channel(id=123)
         channel.add_message(Message(role="user", content=MessageContent(value="What's this?")))
         image_urls = ("https://example.com/image1.jpg", "https://example.com/image2.jpg")
 
@@ -101,7 +101,7 @@ class TestOpenAIServiceAdapter:
         mock_client.chat_completion.return_value = "Single image response"
 
         adapter = OpenAIServiceAdapter(mock_client)
-        channel = Channel(channel_id=123)
+        channel = Channel(id=123)
         channel.add_message(Message(role="user", content=MessageContent(value="Show me")))
 
         adapter.generate_reply(channel, image_urls=("https://example.com/image.jpg",))
@@ -116,7 +116,7 @@ class TestOpenAIServiceAdapter:
         mock_client.chat_completion.return_value = "Regular response"
 
         adapter = OpenAIServiceAdapter(mock_client)
-        channel = Channel(channel_id=123)
+        channel = Channel(id=123)
         channel.add_message(Message(role="user", content=MessageContent(value="Test")))
 
         adapter.generate_reply(channel, image_urls=())
@@ -131,7 +131,7 @@ class TestOpenAIServiceAdapter:
         mock_client.chat_completion.return_value = "Test response"
 
         adapter = OpenAIServiceAdapter(mock_client)
-        channel = Channel(channel_id=123)
+        channel = Channel(id=123)
         channel.add_message(Message(role="user", content=MessageContent(value="First")))
         channel.add_message(Message(role="assistant", content=MessageContent(value="Second")))
 
@@ -152,7 +152,7 @@ class TestOpenAIServiceAdapterEdgeCases:
         mock_client.chat_completion.return_value = "Test reply"
 
         adapter = OpenAIServiceAdapter(mock_client)
-        channel = Channel(channel_id=123)
+        channel = Channel(id=123)
 
         result = adapter.generate_reply(channel)
 
@@ -166,7 +166,7 @@ class TestOpenAIServiceAdapterEdgeCases:
         mock_client.chat_completion.return_value = "Test reply"
 
         adapter = OpenAIServiceAdapter(mock_client)
-        channel = Channel(channel_id=123, max_messages=200)
+        channel = Channel(id=123, max_messages=200)
 
         for i in range(100):
             channel.add_message(Message(role="user", content=MessageContent(value=str(i))))

@@ -83,9 +83,7 @@ class TestCompositionRoot:
         message_processor = root.create_message_processor()
 
         # Test message processing
-        message_processor.execute(
-            channel_id=123, user_content="Hello", channel=Channel(channel_id=123)
-        )
+        message_processor.execute(channel_id=123, user_content="Hello", channel=Channel(id=123))
 
         ai_service.generate_reply.assert_called_once()
 

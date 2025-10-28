@@ -1,4 +1,5 @@
 """Use cases for messaging operations."""
+
 import logging
 
 from src.application.ports.ai_service_port import IAIServicePort

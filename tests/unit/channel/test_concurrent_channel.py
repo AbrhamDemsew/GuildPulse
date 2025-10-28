@@ -7,7 +7,7 @@ from src.domain.channel.value_objects import Message, MessageContent
 
 def test_concurrent_message_additions():
     """Test that concurrent message additions don't corrupt the history."""
-    channel = Channel(channel_id=123)
+    channel = Channel(id=123)
 
     errors = []
 

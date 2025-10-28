@@ -26,13 +26,13 @@ def mock_ai_service() -> Any:
 @pytest.fixture
 def test_channel():
     """Create a test channel."""
-    channel = Channel(channel_id=123)
+    channel = Channel(id=123)
     return channel
 
 
 def test_channel_creation():
     """Test channel creation."""
-    channel = Channel(channel_id=123)
+    channel = Channel(id=123)
     assert channel.id == 123
     assert channel.count_messages() == 0
 
@@ -57,7 +57,7 @@ def test_process_user_turn_channel_exists(mock_ai_service: Any) -> Any:
 
 def test_channel_add_message():
     """Test adding messages to a channel."""
-    channel = Channel(channel_id=123)
+    channel = Channel(id=123)
     message = Message(role="user", content=MessageContent(value="Hello"))
     channel.add_message(message)
     assert channel.count_messages() == 1
@@ -65,7 +65,7 @@ def test_channel_add_message():
 
 def test_channel_max_messages():
     """Test channel message limit."""
-    channel = Channel(channel_id=123, max_messages=3)
+    channel = Channel(id=123, max_messages=3)
     for i in range(5):
         message = Message(role="user", content=MessageContent(value=f"Message {i}"))
         channel.add_message(message)
@@ -74,7 +74,7 @@ def test_channel_max_messages():
 
 def test_channel_get_messages():
     """Test getting messages from channel."""
-    channel = Channel(channel_id=123)
+    channel = Channel(id=123)
     msg1 = Message(role="user", content=MessageContent(value="First"))
     msg2 = Message(role="assistant", content=MessageContent(value="Second"))
     channel.add_message(msg1)
@@ -85,7 +85,7 @@ def test_channel_get_messages():
 
 def test_channel_clear():
     """Test clearing channel messages."""
-    channel = Channel(channel_id=123)
+    channel = Channel(id=123)
     channel.add_message(Message(role="user", content=MessageContent(value="Test")))
     channel.clear()
     assert channel.count_messages() == 0
@@ -126,7 +126,7 @@ def test_message_content_validation():
 def test_in_memory_repository():
     """Test in-memory repository."""
     repo = InMemoryChannelRepository()
-    channel = Channel(channel_id=123)
+    channel = Channel(id=123)
     repo.save(channel)
     retrieved = repo.get(123)
     assert retrieved.id == 123
@@ -165,7 +165,7 @@ class TestRepositoryEdgeCases:
     def test_repository_get_or_create_with_messages(self):
         """Test get_or_create preserves messages."""
         repo = InMemoryChannelRepository()
-        channel = Channel(channel_id=123)
+        channel = Channel(id=123)
         channel.add_message(Message(role="user", content=MessageContent(value="Existing")))
         repo.save(channel)
 
@@ -177,7 +177,7 @@ class TestRepositoryEdgeCases:
         repo = InMemoryChannelRepository()
 
         for i in range(5):
-            channel = Channel(channel_id=i)
+            channel = Channel(id=i)
             channel.add_message(Message(role="user", content=MessageContent(value=f"Msg {i}")))
             repo.save(channel)
 

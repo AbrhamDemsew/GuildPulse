@@ -1,6 +1,4 @@
 """Tests for application ports."""
-import pytest
-from typing import Protocol
 
 
 class TestChannelRepositoryPort:

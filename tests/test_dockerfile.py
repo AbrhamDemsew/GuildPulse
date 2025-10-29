@@ -26,6 +26,6 @@ def test_dockerfile_non_root_user():
     with open("Dockerfile", "r") as f:
         content = f.read()
 
-    assert "USER botuser" in content or "USER appuser" in content or "USER nonroot" in content, (
-        "Dockerfile should use non-root user"
-    )
+    assert (
+        "USER botuser" in content or "USER appuser" in content or "USER nonroot" in content
+    ), "Dockerfile should use non-root user"

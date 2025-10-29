@@ -1,20 +1,23 @@
 """Dependency injection composition root."""
 
+import os
+
 from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
 from src.application.ports.ai_service_port import IAIServicePort
 from src.application.ports.channel_repository_port import IChannelRepositoryPort
 from src.config import Settings
 from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
 from src.infrastructure.ai.openai.client import OpenAIClient
-from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
+from src.infrastructure.persistence.sqlite.repository import SQLiteChannelRepository
 
 
 class CompositionRoot:
     """Dependency injection composition root for the application."""
 
-    def __init__(self, config: Settings) -> None:
+    def __init__(self, config: Settings, db_path: str | None = None) -> None:
         """Initialize composition root with configuration."""
         self.config = config
+        self.db_path = db_path or os.environ.get("DATABASE_PATH", "data/channels.db")
         self._repo: IChannelRepositoryPort | None = None
         self._ai_service: IAIServicePort | None = None
 
@@ -22,8 +25,8 @@ class CompositionRoot:
     def repo(self) -> IChannelRepositoryPort:
         """Get or create channel repository."""
         if self._repo is None:
-            self._repo = InMemoryChannelRepository()
-        return self._repo
+            self._repo = SQLiteChannelRepository(db_path=self.db_path)  # type: ignore[assignment]
+        return self._repo  # type: ignore[return-value]
 
     @property
     def ai_service(self) -> IAIServicePort:

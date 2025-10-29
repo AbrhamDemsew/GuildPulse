@@ -1,12 +1,26 @@
 """Tests for DI composition root."""
 
+import os
+import tempfile
+from typing import Generator
 from unittest.mock import Mock
+
+import pytest
 
 from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
 from src.config import Settings
 from src.domain.channel.aggregate import Channel
 from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
 from src.infrastructure.di.composition_root import CompositionRoot
+
+
+@pytest.fixture
+def temp_db_path() -> Generator[str, None, None]:
+    """Create temporary database path."""
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
+        path = f.name
+    yield path
+    os.unlink(path)
 
 
 class TestCompositionRoot:
@@ -87,7 +101,7 @@ class TestCompositionRoot:
 
         ai_service.generate_reply.assert_called_once()
 
-    def test_multiple_channels_independent(self):
+    def test_multiple_channels_independent(self, temp_db_path: str):
         """Test that multiple channels work independently with mocked AI service."""
         config = Mock(spec=Settings)
         config.OPENAI_API_KEY = "test-key"
@@ -98,13 +112,13 @@ class TestCompositionRoot:
         config.CHAT_SYSTEM_PROMPT = "You are a helpful bot"
         config.LOG_LEVEL = "INFO"
 
-        root = CompositionRoot(config)
+        root = CompositionRoot(config, db_path=temp_db_path)
 
         processor = root.create_message_processor()
 
         # Get the AI service and mock it
         ai_service = root.ai_service
-        ai_service.generate_reply = Mock(return_value="Test response")
+        ai_service.generate_reply = Mock(return_value="Test response")  # type: ignore[assignment]
 
         # Add message to channel 1
         processor.execute(channel_id=1, user_content="Channel 1")

@@ -5,7 +5,7 @@ This project follows **Clean Architecture** with **Domain-Driven Design (DDD)** 
 ## Layer Structure
 
 ```
-src/
+guildpulse/
 ├── config.py                         # Configuration management (Pydantic)
 ├── main.py                           # Application entry point
 ├── domain/                           # Core business logic (NO external dependencies)
@@ -168,10 +168,10 @@ Dependencies flow inward, from outer layers to inner layers.
 **Purpose**: Process and validate images attached to Discord messages for AI analysis.
 
 **Components**:
-- **Bot Layer** (`src/frameworks_drivers/discord/bot.py`): Extracts image URLs from attachments
+- **Bot Layer** (`guildpulse/frameworks_drivers/discord/bot.py`): Extracts image URLs from attachments
 - **Validation**: Max 10MB per image (OpenAI recommended limit)
 - **Logging**: Reports detected image count for debugging
-- **OpenAI Adapter** (`src/infrastructure/ai/openai/adapter.py`): Formats multimodal messages
+- **OpenAI Adapter** (`guildpulse/infrastructure/ai/openai/adapter.py`): Formats multimodal messages
 
 **Flow**:
 1. Discord message received with attachments

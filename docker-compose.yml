@@ -1,18 +1,19 @@
 version: "3.8"
 
 services:
-  py-besto-bot:
+  guildpulse:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: py-besto-bot
+    container_name: guildpulse
+    env_file:
+      - .env
     environment:
-      - ENV_FILE=.env
       - PYTHONPATH=/app
     restart: unless-stopped
     stop_grace_period: 10s
     healthcheck:
-      test: ["CMD", "uv", "run", "python", "-c", "import sys; sys.exit(0)"]
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -23,11 +24,11 @@ services:
         max-size: "10m"
         max-file: "3"
     networks:
-      - bot-network
+      - guildpulse-network
     labels:
-      - "com.py-besto-bot.description=Discord Bot with OpenAI Integration"
-      - "com.py-besto-bot.version=2.0.0"
+      - "com.guildpulse.description=GuildPulse Discord community assistant"
+      - "com.guildpulse.version=1.0.0"
 
 networks:
-  bot-network:
+  guildpulse-network:
     driver: bridge

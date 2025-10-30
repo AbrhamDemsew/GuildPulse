@@ -28,7 +28,7 @@
 import pytest
 from unittest.mock import Mock
 
-from src.config import Settings
+from guildpulse.config import Settings
 
 
 @pytest.fixture(scope="session")
@@ -70,16 +70,16 @@ def mock_http_client():
 @pytest.fixture(scope="module")
 def sample_channel_repository():
     """Create a sample channel repository for module tests."""
-    from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
+    from guildpulse.infrastructure.persistence.memory.repository import InMemoryChannelRepository
     return InMemoryChannelRepository()
 
 
 @pytest.fixture(scope="module")
 def sample_ai_service():
     """Create a sample AI service for module tests."""
-    from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
-    from src.infrastructure.ai.openai.client import OpenAIClient
-    from src.config import Settings
+    from guildpulse.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
+    from guildpulse.infrastructure.ai.openai.client import OpenAIClient
+    from guildpulse.config import Settings
     
     config = Settings(
         OPENAI_API_KEY="test-key",
@@ -104,21 +104,21 @@ def sample_ai_service():
 @pytest.fixture
 def sample_user_message():
     """Provide a sample user message."""
-    from src.domain.channel.value_objects import Message, MessageContent
+    from guildpulse.domain.channel.value_objects import Message, MessageContent
     return Message(role="user", content=MessageContent(value="Hello, how are you?"))
 
 
 @pytest.fixture
 def sample_bot_message():
     """Provide a sample bot message."""
-    from src.domain.channel.value_objects import Message, MessageContent
+    from guildpulse.domain.channel.value_objects import Message, MessageContent
     return Message(role="assistant", content=MessageContent(value="I'm doing well, thank you!"))
 
 
 @pytest.fixture
 def populated_channel(sample_user_message, sample_bot_message):
     """Create a channel with pre-populated messages."""
-    from src.domain.channel.aggregate import Channel
+    from guildpulse.domain.channel.aggregate import Channel
     channel = Channel(channel_id=999)
     channel.add_message(sample_user_message)
     channel.add_message(sample_bot_message)
@@ -171,8 +171,8 @@ async def async_mock_ai_service():
 @pytest.fixture
 async def async_populated_channel():
     """Async fixture with pre-populated channel."""
-    from src.domain.channel.aggregate import Channel
-    from src.domain.channel.value_objects import Message, MessageContent
+    from guildpulse.domain.channel.aggregate import Channel
+    from guildpulse.domain.channel.value_objects import Message, MessageContent
     
     channel = Channel(channel_id=888)
     await asyncio.sleep(0)  # Yield to event loop
@@ -204,8 +204,8 @@ def pytest_configure(config):
 ```python
 """Tests for conftest.py fixtures."""
 import pytest
-from src.config import Settings
-from src.domain.channel.aggregate import Channel
+from guildpulse.config import Settings
+from guildpulse.domain.channel.aggregate import Channel
 
 
 def test_sample_settings_fixture(sample_settings):
@@ -222,7 +222,7 @@ def test_mock_discord_client_fixture(mock_discord_client):
 
 def test_sample_user_message_fixture(sample_user_message):
     """Test that sample_user_message fixture returns Message."""
-    from src.domain.channel.value_objects import Message
+    from guildpulse.domain.channel.value_objects import Message
     assert isinstance(sample_user_message, Message)
     assert sample_user_message.role == "user"
 
@@ -253,8 +253,8 @@ def test_mock_ai_service_response_fixture(mock_ai_service_response):
 """Tests for value objects."""
 import pytest
 
-from src.domain.channel.value_objects import MessageContent, MessageRole
-from src.domain.shared.errors import MessageValidationError
+from guildpulse.domain.channel.value_objects import MessageContent, MessageRole
+from guildpulse.domain.shared.errors import MessageValidationError
 
 
 @pytest.mark.parametrize("content,expected", [
@@ -284,7 +284,7 @@ def test_message_content_validation(content, expected):
 ])
 def test_message_role_validation(role, expected):
     """Test message role validation."""
-    from src.domain.channel.value_objects import Message, MessageContent
+    from guildpulse.domain.channel.value_objects import Message, MessageContent
     
     if expected:
         msg = Message(role=role, content=MessageContent(value="test"))
@@ -325,9 +325,9 @@ def test_message_content_length_validation(length, expected):
 """Tests for Channel aggregate."""
 import pytest
 
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
-from src.domain.shared.domain_event import DomainEvent
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.domain.shared.domain_event import DomainEvent
 
 
 @pytest.mark.parametrize("max_messages", [5, 10, 50, 100])
@@ -383,11 +383,11 @@ from typing import Any
 from unittest import mock
 from unittest.mock import Mock, patch
 
-from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
-from src.domain.shared.errors import ChannelNotFoundError
-from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
+from guildpulse.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.domain.shared.errors import ChannelNotFoundError
+from guildpulse.infrastructure.persistence.memory.repository import InMemoryChannelRepository
 
 
 def test_process_user_turn_with_retry_pattern():
@@ -482,10 +482,10 @@ def test_clear_channel_history_with_mock_repo():
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 
-from src.application.ports.ai_service_port import IAIServicePort
-from src.application.ports.channel_repository_port import IChannelRepositoryPort
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
+from guildpulse.application.ports.ai_service_port import IAIServicePort
+from guildpulse.application.ports.channel_repository_port import IChannelRepositoryPort
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
 
 
 class TestMockingPatterns:
@@ -527,7 +527,7 @@ class TestMockingPatterns:
 
     def test_patch_decorator(self):
         """Test patch decorator pattern."""
-        with patch("src.domain.channel.aggregate.Thread") as mock_thread:
+        with patch("guildpulse.domain.channel.aggregate.Thread") as mock_thread:
             # Thread is patched, so it won't create real threads
             channel = Channel(channel_id=123)
             channel.add_message(Message(role="user", content=MessageContent(value="test")))
@@ -538,7 +538,7 @@ class TestMockingPatterns:
 
 def test_with_patch_context():
     """Test patch in context manager."""
-    with patch("src.domain.channel.aggregate.ThreadingLock") as mock_lock:
+    with patch("guildpulse.domain.channel.aggregate.ThreadingLock") as mock_lock:
         channel = Channel(channel_id=123)
         # The lock should have been mocked
         assert mock_lock.return_value.acquire.called or True  # Lock is used in __init__
@@ -573,8 +573,8 @@ def test_mock_with_patch_dict():
 import asyncio
 import pytest
 
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
 
 
 @pytest.mark.asyncio
@@ -681,12 +681,12 @@ async def test_async_timeout_failure():
 import pytest
 from unittest.mock import Mock
 
-from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
-from src.application.ports.ai_service_port import IAIServicePort
-from src.application.ports.channel_repository_port import IChannelRepositoryPort
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
-from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
+from guildpulse.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
+from guildpulse.application.ports.ai_service_port import IAIServicePort
+from guildpulse.application.ports.channel_repository_port import IChannelRepositoryPort
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.infrastructure.persistence.memory.repository import InMemoryChannelRepository
 
 
 class TestIntegrationFlow:
@@ -793,8 +793,8 @@ mkdir -p tests/async
 """Unit tests for domain value objects."""
 import pytest
 
-from src.domain.channel.value_objects import MessageContent, MessageRole
-from src.domain.shared.errors import MessageValidationError
+from guildpulse.domain.channel.value_objects import MessageContent, MessageRole
+from guildpulse.domain.shared.errors import MessageValidationError
 
 
 @pytest.mark.unit
@@ -828,7 +828,7 @@ class TestMessageRole:
     ])
     def test_role_validation(self, role, expected):
         """Test role validation."""
-        from src.domain.channel.value_objects import Message, MessageContent
+        from guildpulse.domain.channel.value_objects import Message, MessageContent
 
         if expected:
             msg = Message(role=role, content=MessageContent(value="test"))
@@ -854,7 +854,7 @@ class TestMessageRole:
 
 ## Overview
 
-This document describes the testing patterns and conventions used in the py-besto-bot project.
+This document describes the testing patterns and conventions used in the guildpulse project.
 
 ## Test Types
 
@@ -887,7 +887,7 @@ pytest tests/unit/domain/test_value_objects.py
 pytest tests/unit/domain/test_value_objects.py::TestMessageContent::test_validation
 
 # Run with coverage
-pytest --cov=src --cov-report=term-missing
+pytest --cov=guildpulse --cov-report=term-missing
 
 # Run unit tests only
 pytest -m unit
@@ -947,4 +947,4 @@ Examples:
 ## Coverage Requirements
 
 - Minimum: 80% coverage
-- Run: `pytest --cov=src --cov-fail-under=80`
+- Run: `pytest --cov=guildpulse --cov-fail-under=80`

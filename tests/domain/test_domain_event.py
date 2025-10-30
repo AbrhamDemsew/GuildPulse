@@ -1,6 +1,6 @@
 """Tests for DomainEvent base interface."""
 
-from src.domain.shared.domain_event import DomainEvent
+from guildpulse.domain.shared.domain_event import DomainEvent
 
 
 def test_domain_event_is_a_protocol():

@@ -3,7 +3,7 @@
 import time
 
 
-from src.frameworks_drivers.discord.rate_limiter import RateLimiter
+from guildpulse.frameworks_drivers.discord.rate_limiter import RateLimiter
 
 
 class TestRateLimiter:

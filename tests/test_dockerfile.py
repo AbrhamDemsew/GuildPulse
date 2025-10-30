@@ -1,31 +1,28 @@
-"""Tests for Dockerfile optimization."""
+"""Tests for Silver-compliant Dockerfile."""
+
+from pathlib import Path
 
 
-def test_dockerfile_uses_buildkit_cache():
-    """Test Dockerfile uses BuildKit cache mounts for uv."""
-    with open("Dockerfile", "r") as f:
-        content = f.read()
-
-    # Check for cache mount pattern
-    assert "--mount=type=cache" in content, "Dockerfile should use BuildKit cache mounts"
-    assert "/root/.cache/uv" in content, "Dockerfile should cache uv cache"
+def test_dockerfile_copies_full_repo():
+    content = Path("Dockerfile").read_text(encoding="utf-8")
+    assert "COPY . ." in content, "Dockerfile must copy full repo including .git"
 
 
-def test_dockerfile_multistage():
-    """Test Dockerfile uses multi-stage build."""
-    with open("Dockerfile", "r") as f:
-        content = f.read()
+def test_dockerfile_installs_git():
+    content = Path("Dockerfile").read_text(encoding="utf-8")
+    assert "git" in content, "Dockerfile must install git for task-based resets"
 
-    # Check for FROM statements (multiple = multi-stage)
-    from_count = content.count("FROM ")
-    assert from_count >= 2, "Dockerfile should use multi-stage build (multiple FROM statements)"
+
+def test_dockerfile_pinned_python_base():
+    content = Path("Dockerfile").read_text(encoding="utf-8")
+    assert "python:3.12.9-slim-bookworm" in content
 
 
 def test_dockerfile_non_root_user():
-    """Test Dockerfile uses non-root user."""
-    with open("Dockerfile", "r") as f:
-        content = f.read()
+    content = Path("Dockerfile").read_text(encoding="utf-8")
+    assert "USER guildpulse" in content
 
-    assert (
-        "USER botuser" in content or "USER appuser" in content or "USER nonroot" in content
-    ), "Dockerfile should use non-root user"
+
+def test_dockerfile_no_unpinned_pip_upgrade():
+    content = Path("Dockerfile").read_text(encoding="utf-8").lower()
+    assert "pip install --upgrade pip" not in content

@@ -1,6 +1,6 @@
 line-length = 100
 target-version = "py313"
-extend-include = ["src/**/*.py", "tests/**/*.py", "docs/**/*.py"]
+extend-include = ["guildpulse/**/*.py", "tests/**/*.py", "docs/**/*.py"]
 
 [format]
 quote-style = "double"

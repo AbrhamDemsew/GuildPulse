@@ -3,10 +3,11 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "py-besto-bot"
-version = "0.1.0"
-description = "Discord bot with AI capabilities"
-requires-python = ">=3.13"
+name = "guildpulse"
+version = "1.0.0"
+description = "GuildPulse Discord community assistant with AI"
+authors = ["Abrham <eyobsmart3@gmail.com>"]
+requires-python = ">=3.12"
 dependencies = [
     "discord.py>=2.3.0",
     "openai>=1.0.0",
@@ -29,19 +30,19 @@ dev = [
 
 [tool.black]
 line-length = 100
-target-version = ['py313']
+target-version = ['py312']
 skip-string-normalization = true
 
 [tool.ruff]
 line-length = 100
-target-version = "py313"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "B", "C4", "UP", "ARG"]
 ignore = ["B008", "B014", "B904"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["src", "tests"]
+known-first-party = ["guildpulse", "tests"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -64,9 +65,9 @@ markers = [
 ]
 
 [tool.basedpyright]
-include = ["src", "tests"]
+include = ["guildpulse", "tests"]
 exclude = [".venv", "**/__pycache__"]
-pythonVersion = "3.13"
+pythonVersion = "3.12"
 typeCheckingMode = "strict"
 reportMissingTypeArgument = "warning"
 reportUnknownParameterType = "warning"

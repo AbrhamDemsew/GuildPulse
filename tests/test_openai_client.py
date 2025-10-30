@@ -6,13 +6,13 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.infrastructure.ai.openai.client import OpenAIClient
+from guildpulse.infrastructure.ai.openai.client import OpenAIClient
 
 
 @pytest.fixture
 def mock_openai_client() -> Any:
     """Create a mock OpenAI client."""
-    with patch("src.infrastructure.ai.openai.client.OpenAI") as mock_openai:
+    with patch("guildpulse.infrastructure.ai.openai.client.OpenAI") as mock_openai:
         mock_client_instance = Mock()
         mock_response = Mock()
         mock_response.choices = [Mock()]

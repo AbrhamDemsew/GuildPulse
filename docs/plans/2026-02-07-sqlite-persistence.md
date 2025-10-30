@@ -13,15 +13,15 @@
 ### Files Created:
 | File | Purpose |
 |------|---------|
-| `src/infrastructure/persistence/sqlite/__init__.py` | Module exports |
-| `src/infrastructure/persistence/sqlite/schema.py` | Database schema (channels table) |
-| `src/infrastructure/persistence/sqlite/repository.py` | SQLite repository implementation |
+| `guildpulse/infrastructure/persistence/sqlite/__init__.py` | Module exports |
+| `guildpulse/infrastructure/persistence/sqlite/schema.py` | Database schema (channels table) |
+| `guildpulse/infrastructure/persistence/sqlite/repository.py` | SQLite repository implementation |
 | `tests/infrastructure/test_sqlite_repository.py` | SQLite repository tests (10 tests) |
 
 ### Files Modified:
 | File | Changes |
 |------|---------|
-| `src/infrastructure/di/composition_root.py` | Uses SQLite by default with configurable db_path |
+| `guildpulse/infrastructure/di/composition_root.py` | Uses SQLite by default with configurable db_path |
 | `tests/infrastructure/test_composition_root.py` | Added temp_db_path fixture for test isolation |
 
 ---
@@ -34,17 +34,17 @@ pytest -v --no-cov
 **Result:** ✅ 273 tests passed, 0 failed
 
 ```bash
-pytest --cov=src --cov-fail-under=75
+pytest --cov=guildpulse --cov-fail-under=75
 ```
 **Result:** ✅ 82.5% coverage (exceeds 75% threshold)
 
 ```bash
-ruff check src/ tests/
+ruff check guildpulse/ tests/
 ```
 **Result:** ✅ 0 linting errors
 
 ```bash
-mypy src/ tests/
+mypy guildpulse/ tests/
 ```
 **Result:** ✅ 0 type errors
 
@@ -88,7 +88,7 @@ DATABASE_PATH=data/channels.db
 ## 🔄 Migration Path (Optional)
 
 For existing in-memory repository users:
-- Keep `src/infrastructure/persistence/memory/` for development/testing
+- Keep `guildpulse/infrastructure/persistence/memory/` for development/testing
 - SQLite is now the default in `CompositionRoot`
 - Can switch back by modifying `composition_root.py`
 
@@ -97,8 +97,8 @@ For existing in-memory repository users:
 ## 📝 Usage Example
 
 ```python
-from src.infrastructure.di.composition_root import CompositionRoot
-from src.config import Settings
+from guildpulse.infrastructure.di.composition_root import CompositionRoot
+from guildpulse.config import Settings
 
 # Initialize with default database path
 root = CompositionRoot(Settings())

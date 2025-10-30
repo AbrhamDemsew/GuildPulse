@@ -6,17 +6,17 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.application.messaging.handlers import ProcessUserTurn
-from src.domain.channel.value_objects import Message, MessageContent
-from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
-from src.infrastructure.ai.openai.client import OpenAIClient
-from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
+from guildpulse.application.messaging.handlers import ProcessUserTurn
+from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
+from guildpulse.infrastructure.ai.openai.client import OpenAIClient
+from guildpulse.infrastructure.persistence.memory.repository import InMemoryChannelRepository
 
 
 @pytest.fixture
 def mock_client():
     """Create a mock OpenAI client."""
-    with patch("src.infrastructure.ai.openai.client.OpenAI") as mock_openai:
+    with patch("guildpulse.infrastructure.ai.openai.client.OpenAI") as mock_openai:
         mock_client_instance = Mock()
         mock_response = Mock()
         mock_response.choices = [Mock()]
@@ -38,9 +38,9 @@ def mock_client():
 @pytest.fixture
 def message_processor() -> Any:
     """Create a message processor with mock client."""
-    from src.infrastructure.ai.openai.client import OpenAIClient
+    from guildpulse.infrastructure.ai.openai.client import OpenAIClient
 
-    with patch("src.infrastructure.ai.openai.client.OpenAI") as mock_openai:
+    with patch("guildpulse.infrastructure.ai.openai.client.OpenAI") as mock_openai:
         mock_client_instance = Mock()
         mock_response = Mock()
         mock_response.choices = [Mock()]

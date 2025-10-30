@@ -6,12 +6,12 @@ from unittest.mock import Mock
 
 import pytest
 
-from src.application.messaging.handlers import ProcessUserTurn
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
-from src.domain.shared.errors import MessageValidationError
-from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
-from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
+from guildpulse.application.messaging.handlers import ProcessUserTurn
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.domain.shared.errors import MessageValidationError
+from guildpulse.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
+from guildpulse.infrastructure.persistence.memory.repository import InMemoryChannelRepository
 
 
 @pytest.fixture
@@ -117,7 +117,7 @@ def test_message_validation():
 
 def test_message_content_validation():
     """Test message content validation."""
-    from src.domain.shared.errors import MessageValidationError
+    from guildpulse.domain.shared.errors import MessageValidationError
 
     with pytest.raises(MessageValidationError):
         MessageContent(value="")
@@ -134,7 +134,7 @@ def test_in_memory_repository():
 
 def test_in_memory_repository_not_found():
     """Test repository error handling."""
-    from src.domain.shared.errors import ChannelNotFoundError
+    from guildpulse.domain.shared.errors import ChannelNotFoundError
 
     repo = InMemoryChannelRepository()
     with pytest.raises(ChannelNotFoundError):
@@ -146,7 +146,7 @@ class TestOpenAIIntegration:
 
     def test_full_openai_flow(self):
         """Test complete OpenAI client flow."""
-        from src.infrastructure.ai.openai.client import OpenAIClient
+        from guildpulse.infrastructure.ai.openai.client import OpenAIClient
 
         client = OpenAIClient(
             api_key="test-key",

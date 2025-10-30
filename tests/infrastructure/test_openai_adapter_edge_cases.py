@@ -3,10 +3,10 @@
 import pytest
 from unittest.mock import Mock
 
-from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
-from src.infrastructure.ai.openai.client import OpenAIClient
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
+from guildpulse.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
+from guildpulse.infrastructure.ai.openai.client import OpenAIClient
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
 
 
 @pytest.fixture

@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Address architectural violations, test coverage gaps, and performance optimizations identified by the skills analysis for py-besto-bot Discord bot.
+**Goal:** Address architectural violations, test coverage gaps, and performance optimizations identified by the skills analysis for guildpulse Discord bot.
 
 **Architecture:** Clean Architecture with ports and adapters. We will fix dependency violations, add infrastructure tests, implement Discord rate limiting, refactor tests with parametrization, and optimize Dockerfile.
 
@@ -13,8 +13,8 @@
 ## Task 1: Fix domain→config dependency violation
 
 **Files:**
-- Create: `src/domain/shared/config_port.py`
-- Modify: `src/domain/channel/aggregate.py:1-15`
+- Create: `guildpulse/domain/shared/config_port.py`
+- Modify: `guildpulse/domain/channel/aggregate.py:1-15`
 - Test: `tests/domain/test_config_port.py`
 
 **Step 1: Write the failing test**
@@ -23,7 +23,7 @@ Create `tests/domain/test_config_port.py`:
 ```python
 """Tests for ConfigPort interface in domain layer."""
 
-from src.domain.shared.config_port import ConfigPort
+from guildpulse.domain.shared.config_port import ConfigPort
 
 
 def test_config_port_has_required_properties():
@@ -66,11 +66,11 @@ def test_config_port_has_required_properties():
 **Step 2: Run test to verify it fails**
 
 Run: `uv run pytest tests/domain/test_config_port.py -v`
-Expected: FAIL with "No module named 'src.domain.shared.config_port'"
+Expected: FAIL with "No module named 'guildpulse.domain.shared.config_port'"
 
 **Step 3: Write minimal implementation**
 
-Create `src/domain/shared/config_port.py`:
+Create `guildpulse/domain/shared/config_port.py`:
 ```python
 """Config port for dependency inversion in domain layer."""
 
@@ -107,7 +107,7 @@ Expected: PASS
 **Step 5: Commit**
 
 ```bash
-git add tests/domain/test_config_port.py src/domain/shared/config_port.py
+git add tests/domain/test_config_port.py guildpulse/domain/shared/config_port.py
 git commit -m "feat: add ConfigPort protocol to domain layer"
 ```
 
@@ -116,7 +116,7 @@ git commit -m "feat: add ConfigPort protocol to domain layer"
 ## Task 2: Implement ConfigPort for Settings class
 
 **Files:**
-- Modify: `src/config.py:20-60`
+- Modify: `guildpulse/config.py:20-60`
 
 **Step 1: Write the failing test**
 
@@ -124,7 +124,7 @@ Update `tests/config/test_config.py` to test ConfigPort implementation:
 ```python
 """Test that Settings implements ConfigPort."""
 
-from src.config import Settings, get_settings
+from guildpulse.config import Settings, get_settings
 
 
 def test_settings_implements_config_port():
@@ -149,7 +149,7 @@ Expected: FAIL (test doesn't exist yet)
 
 **Step 3: Write minimal implementation**
 
-Modify `src/config.py` to add ConfigPort implementation:
+Modify `guildpulse/config.py` to add ConfigPort implementation:
 ```python
 # Add to Settings class (after __init__ if needed, but properties are already there)
 # The Settings class already has all required properties defined with Field()
@@ -164,7 +164,7 @@ Expected: PASS
 **Step 5: Commit**
 
 ```bash
-git add src/config.py tests/config/test_config.py
+git add guildpulse/config.py tests/config/test_config.py
 git commit -m "feat: verify Settings implements ConfigPort"
 ```
 
@@ -184,10 +184,10 @@ Create `tests/infrastructure/test_openai_adapter_edge_cases.py`:
 import pytest
 from unittest.mock import Mock
 
-from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
-from src.infrastructure.ai.openai.client import OpenAIClient
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
+from guildpulse.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
+from guildpulse.infrastructure.ai.openai.client import OpenAIClient
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
 
 
 @pytest.fixture
@@ -295,17 +295,17 @@ Expected: FAIL (all tests fail because adapter doesn't handle these cases proper
 
 **Step 3: Write minimal implementation**
 
-Modify `src/infrastructure/ai/openai/adapter.py` to handle edge cases:
+Modify `guildpulse/infrastructure/ai/openai/adapter.py` to handle edge cases:
 ```python
 """OpenAI adapter implementation."""
 
 from typing import TYPE_CHECKING, Any
 
-from src.config import get_settings
-from src.infrastructure.ai.openai.client import OpenAIClient
+from guildpulse.config import get_settings
+from guildpulse.infrastructure.ai.openai.client import OpenAIClient
 
 if TYPE_CHECKING:
-    from src.domain.channel.aggregate import Channel
+    from guildpulse.domain.channel.aggregate import Channel
 
 
 class OpenAIServiceAdapter:
@@ -345,7 +345,7 @@ Expected: All tests PASS
 **Step 5: Commit**
 
 ```bash
-git add tests/infrastructure/test_openai_adapter_edge_cases.py src/infrastructure/ai/openai/adapter.py
+git add tests/infrastructure/test_openai_adapter_edge_cases.py guildpulse/infrastructure/ai/openai/adapter.py
 git commit -m "test: add edge case tests for OpenAI adapter"
 ```
 
@@ -354,8 +354,8 @@ git commit -m "test: add edge case tests for OpenAI adapter"
 ## Task 4: Implement Discord rate limiter
 
 **Files:**
-- Create: `src/frameworks_drivers/discord/rate_limiter.py`
-- Modify: `src/frameworks_drivers/discord/bot.py:80-110`
+- Create: `guildpulse/frameworks_drivers/discord/rate_limiter.py`
+- Modify: `guildpulse/frameworks_drivers/discord/bot.py:80-110`
 
 **Step 1: Write the failing test**
 
@@ -368,7 +368,7 @@ import time
 
 import pytest
 
-from src.frameworks_drivers.discord.rate_limiter import RateLimiter
+from guildpulse.frameworks_drivers.discord.rate_limiter import RateLimiter
 
 
 class TestRateLimiter:
@@ -452,11 +452,11 @@ class TestRateLimiter:
 **Step 2: Run test to verify it fails**
 
 Run: `uv run pytest tests/frameworks_drivers/test_rate_limiter.py -v`
-Expected: FAIL with "No module named 'src.frameworks_drivers.discord.rate_limiter'"
+Expected: FAIL with "No module named 'guildpulse.frameworks_drivers.discord.rate_limiter'"
 
 **Step 3: Write minimal implementation**
 
-Create `src/frameworks_drivers/discord/rate_limiter.py`:
+Create `guildpulse/frameworks_drivers/discord/rate_limiter.py`:
 ```python
 """Rate limiter for Discord API."""
 
@@ -525,7 +525,7 @@ Expected: All tests PASS
 **Step 5: Commit**
 
 ```bash
-git add tests/frameworks_drivers/test_rate_limiter.py src/frameworks_drivers/discord/rate_limiter.py
+git add tests/frameworks_drivers/test_rate_limiter.py guildpulse/frameworks_drivers/discord/rate_limiter.py
 git commit -m "feat: add Discord rate limiter"
 ```
 
@@ -534,7 +534,7 @@ git commit -m "feat: add Discord rate limiter"
 ## Task 5: Integrate rate limiter into bot
 
 **Files:**
-- Modify: `src/frameworks_drivers/discord/bot.py:80-110`
+- Modify: `guildpulse/frameworks_drivers/discord/bot.py:80-110`
 
 **Step 1: Write the failing test**
 
@@ -547,7 +547,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from src.frameworks_drivers.discord.bot import handle_message_processing, setup_discord_bot
+from guildpulse.frameworks_drivers.discord.bot import handle_message_processing, setup_discord_bot
 
 
 @pytest.mark.asyncio
@@ -575,7 +575,7 @@ async def test_bot_with_rate_limiter():
     mock_processor.return_value = "Test response"
     
     # Mock channel
-    with patch("src.frameworks_drivers.discord.bot.get_lock") as mock_get_lock:
+    with patch("guildpulse.frameworks_drivers.discord.bot.get_lock") as mock_get_lock:
         mock_lock = Mock()
         mock_get_lock.return_value = mock_lock
         
@@ -589,7 +589,7 @@ async def test_bot_with_rate_limiter():
 @pytest.mark.asyncio
 async def test_bot_rate_limit_blocks_excessive_requests():
     """Test that rate limiter blocks excessive requests."""
-    from src.frameworks_drivers.discord.rate_limiter import RateLimiter
+    from guildpulse.frameworks_drivers.discord.rate_limiter import RateLimiter
     
     limiter = RateLimiter(max_requests=2, time_window=1.0)
     
@@ -613,7 +613,7 @@ Expected: FAIL (rate limiter not integrated yet)
 
 **Step 3: Write minimal implementation**
 
-Modify `src/frameworks_drivers/discord/bot.py`:
+Modify `guildpulse/frameworks_drivers/discord/bot.py`:
 ```python
 """Discord framework integration."""
 
@@ -629,10 +629,10 @@ from discord import app_commands
 from discord.ext import commands
 from discord.ui import Button, View, button
 
-from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
-from src.config import setup_logging
-from src.frameworks_drivers.discord.rate_limiter import RateLimiter
-from src.infrastructure.di.composition_root import CompositionRoot
+from guildpulse.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
+from guildpulse.config import setup_logging
+from guildpulse.frameworks_drivers.discord.rate_limiter import RateLimiter
+from guildpulse.infrastructure.di.composition_root import CompositionRoot
 
 logger = logging.getLogger(__name__)
 ```
@@ -758,7 +758,7 @@ Expected: All tests PASS
 **Step 5: Commit**
 
 ```bash
-git add src/frameworks_drivers/discord/bot.py tests/frameworks_drivers/test_discord_bot_integration.py
+git add guildpulse/frameworks_drivers/discord/bot.py tests/frameworks_drivers/test_discord_bot_integration.py
 git commit -m "feat: integrate rate limiter into bot message handling"
 ```
 
@@ -777,7 +777,7 @@ Update `tests/domain/test_errors.py` to use parametrize:
 
 import pytest
 
-from src.domain.shared.errors import (
+from guildpulse.domain.shared.errors import (
     ChannelNotFoundError,
     ConversationHistoryError,
     DomainError,
@@ -917,7 +917,7 @@ COPY . /app
 # Create non-root user
 RUN useradd -m -u 1000 botuser && \
     chown -R botuser:botuser /app && \
-    chmod +x /app/src/main.py
+    chmod +x /app/guildpulse/main.py
 
 # Switch to non-root user
 USER botuser
@@ -935,7 +935,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # EXPOSE 8080
 
 # Run the application with uv
-CMD ["uv", "run", "python", "-m", "src.main"]
+CMD ["uv", "run", "python", "-m", "guildpulse.main"]
 ```
 
 **Step 4: Run test to verify it passes**
@@ -995,7 +995,7 @@ Expected: FAIL (mypy config not validated yet)
 Update `pyproject.toml`:
 ```toml
 [tool.basedpyright]
-include = ["src", "tests"]
+include = ["guildpulse", "tests"]
 exclude = [".venv", "**/__pycache__"]
 pythonVersion = "3.13"
 typeCheckingMode = "strict"
@@ -1038,13 +1038,13 @@ Create `tests/integration/test_full_workflow.py`:
 
 import pytest
 
-from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
-from src.domain.shared.errors import ChannelNotFoundError
-from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
-from src.infrastructure.ai.openai.client import OpenAIClient
-from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
+from guildpulse.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.domain.shared.errors import ChannelNotFoundError
+from guildpulse.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
+from guildpulse.infrastructure.ai.openai.client import OpenAIClient
+from guildpulse.infrastructure.persistence.memory.repository import InMemoryChannelRepository
 
 
 @pytest.fixture
@@ -1214,17 +1214,17 @@ Expected: 250+ tests PASS
 
 **Step 2: Run type checking**
 
-Run: `uv run mypy src/`
+Run: `uv run mypy guildpulse/`
 Expected: Success
 
 **Step 3: Run linting**
 
-Run: `uv run ruff check src/ tests/`
+Run: `uv run ruff check guildpulse/ tests/`
 Expected: All checks passed
 
 **Step 4: Run formatting check**
 
-Run: `uv run black --check src/ tests/`
+Run: `uv run black --check guildpulse/ tests/`
 Expected: All files formatted
 
 **Step 5: Final commit**

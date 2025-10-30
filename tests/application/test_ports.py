@@ -4,7 +4,7 @@
 class TestChannelRepositoryPort:
     def test_channel_repository_protocol(self):
         """Test that ChannelRepositoryPort is properly defined."""
-        from src.application.ports.channel_repository_port import IChannelRepositoryPort
+        from guildpulse.application.ports.channel_repository_port import IChannelRepositoryPort
 
         # Should be a Protocol
         assert hasattr(IChannelRepositoryPort, "save")
@@ -15,7 +15,7 @@ class TestChannelRepositoryPort:
 class TestAIServicePort:
     def test_ai_service_protocol(self):
         """Test that AIServicePort is properly defined."""
-        from src.application.ports.ai_service_port import IAIServicePort
+        from guildpulse.application.ports.ai_service_port import IAIServicePort
 
         # Should be a Protocol
         assert hasattr(IAIServicePort, "generate_reply")
@@ -24,7 +24,7 @@ class TestAIServicePort:
 class TestConfigPort:
     def test_config_port_protocol(self):
         """Test that ConfigPort is properly defined."""
-        from src.application.ports.config_port import IConfigPort
+        from guildpulse.application.ports.config_port import IConfigPort
 
         # Should be a Protocol
         assert hasattr(IConfigPort, "get_discord_token")

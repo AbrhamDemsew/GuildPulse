@@ -4,10 +4,10 @@ from typing import Any
 
 from unittest.mock import Mock
 
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
-from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
-from src.infrastructure.ai.openai.client import OpenAIClient
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
+from guildpulse.infrastructure.ai.openai.client import OpenAIClient
 
 
 class TestOpenAIServiceAdapter:
@@ -38,7 +38,7 @@ class TestOpenAIServiceAdapter:
 
         call_args = mock_client.chat_completion.call_args[0][0]
         assert call_args[0]["role"] == "system"
-        assert "Discord" in call_args[0]["content"]
+        assert call_args[0]["content"] == adapter.settings.CHAT_SYSTEM_PROMPT
 
     def test_generate_reply_with_existing_messages(self):
         """Test reply generation with existing channel messages."""

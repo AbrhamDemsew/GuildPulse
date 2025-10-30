@@ -1,7 +1,7 @@
 """Tests for domain value objects."""
 
 import pytest
-from src.domain.channel.value_objects import (
+from guildpulse.domain.channel.value_objects import (
     Message,
     MessageContent,
     MessageRole,

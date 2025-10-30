@@ -1,4 +1,4 @@
-# AGENTS.md - Coding Guidelines for py-besto-bot
+# AGENTS.md - Coding Guidelines for guildpulse
 
 ## Project Overview
 
@@ -14,10 +14,10 @@ This project is a Discord bot built with Python 3.14 using Clean Architecture pr
 source .venv/bin/activate
 
 # Run the bot
-uv run python src/main.py
+uv run python -m guildpulse.main
 
 # Run with debug mode
-DEBUG=true LOG_LEVEL=DEBUG uv run python src/main.py
+DEBUG=true LOG_LEVEL=DEBUG uv run python -m guildpulse.main
 ```
 
 #### Docker (Production)
@@ -48,13 +48,13 @@ pytest tests/test_message_processor.py
 pytest tests/test_message_processor.py::test_generate_reply
 
 # Run with coverage
-pytest --cov=src --cov-report=html
+pytest --cov=guildpulse --cov-report=html
 
 # Run with verbose output
 pytest -v
 
 # Run with coverage and verbose
-pytest --cov=src --cov-report=term-missing -v
+pytest --cov=guildpulse --cov-report=term-missing -v
 ```
 
 ### Code Quality Tools
@@ -64,25 +64,25 @@ pytest --cov=src --cov-report=term-missing -v
 source .venv/bin/activate
 
 # Format code with black
-black src/
+black guildpulse/
 
 # Check code style with ruff (or flake8)
-ruff check src/
+ruff check guildpulse/
 # or
-flake8 src/
+flake8 guildpulse/
 
 # Format with ruff
-ruff format src/
+ruff format guildpulse/
 
 # Type check with mypy
-mypy src/
+mypy guildpulse/
 
 # Install and run pre-commit hooks
 pre-commit install
 pre-commit run --all-files
 
 # Run specific pre-commit hook
-pre-commit run black --files src/main.py
+pre-commit run black --files guildpulse/main.py
 ```
 
 ### Install Dependencies
@@ -104,7 +104,7 @@ pre-commit install
 This project follows **Clean Architecture** with Domain-Driven Design principles:
 
 ```
-src/
+guildpulse/
 ├── config.py                         # Configuration management (Pydantic)
 ├── main.py                           # Application entry point
 ├── domain/                           # Core business logic (NO external dependencies)
@@ -281,7 +281,7 @@ if response is None:
 @pytest.fixture
 def mock_client():
     """Create a mock OpenAI client."""
-    with patch("src.infrastructure.ai.openai_client.OpenAI") as mock_openai:
+    with patch("guildpulse.infrastructure.ai.openai_client.OpenAI") as mock_openai:
         client = OpenAIClient(
             api_key="test_key",
             base_url="https://test.com/v1",
@@ -379,8 +379,8 @@ The docker-compose.yml includes:
 
 1. **Setup:**
    ```bash
-   git clone https://github.com/ncls-p/py-besto-bot.git
-   cd py-besto-bot
+   git clone https://github.com/AbrhamDemsew/GuildPulse.git
+   cd guildpulse
    uv sync
    pre-commit install
    ```
@@ -395,7 +395,7 @@ The docker-compose.yml includes:
 
 3. **Testing:**
    ```bash
-   pytest -v --cov=src
+   pytest -v --cov=guildpulse
    ```
 
 4. **Docker (optional):**

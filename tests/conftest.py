@@ -8,8 +8,31 @@ from unittest import mock
 
 import pytest
 
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
+from guildpulse.config import get_settings
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
+
+DEFAULT_TEST_ENV = {
+    "DISCORD_TOKEN": "test-token",
+    "OPENAI_API_KEY": "test-key",
+    "OPENAI_BASE_URL": "https://test.com/v1",
+    "OPENAI_MODEL": "test-model",
+    "OPENAI_MAX_TOKENS": "100",
+    "OPENAI_TEMPERATURE": "0.5",
+    "LOG_LEVEL": "DEBUG",
+    "DEBUG": "false",
+    "CHAT_SYSTEM_PROMPT": "Test prompt",
+}
+
+
+@pytest.fixture(autouse=True)
+def reset_settings_cache() -> Generator[None, None, None]:
+    """Ensure settings cache does not leak between tests."""
+    get_settings.cache_clear()
+    with mock.patch.dict("os.environ", DEFAULT_TEST_ENV, clear=False):
+        yield
+    get_settings.cache_clear()
+
 
 # ============================================================================
 # Session-scoped fixtures (expensive setup)
@@ -22,19 +45,7 @@ def test_environment():
 
     This fixture runs once per test session and sets up all environment variables.
     """
-    env_vars = {
-        "DISCORD_TOKEN": "test-token",
-        "OPENAI_API_KEY": "test-key",
-        "OPENAI_BASE_URL": "https://test.com/v1",
-        "OPENAI_MODEL": "test-model",
-        "OPENAI_MAX_TOKENS": "100",
-        "OPENAI_TEMPERATURE": "0.5",
-        "LOG_LEVEL": "DEBUG",
-        "DEBUG": "false",
-        "CHAT_SYSTEM_PROMPT": "Test prompt",
-    }
-
-    with mock.patch.dict("os.environ", env_vars, clear=True):
+    with mock.patch.dict("os.environ", DEFAULT_TEST_ENV, clear=True):
         yield
 
 
@@ -92,7 +103,7 @@ def channel_with_many_messages() -> Channel:
 @pytest.fixture
 def mock_openai_client():
     """Create a mock OpenAI client with spec for better type checking."""
-    from src.infrastructure.ai.openai.client import OpenAIClient
+    from guildpulse.infrastructure.ai.openai.client import OpenAIClient
 
     mock_client = mock.Mock(spec=OpenAIClient)
     return mock_client
@@ -101,7 +112,7 @@ def mock_openai_client():
 @pytest.fixture
 def mock_ai_adapter(mock_openai_client: mock.Mock) -> mock.Mock:
     """Create a mock AI service adapter with response configured."""
-    from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
+    from guildpulse.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
 
     adapter = mock.Mock(spec=OpenAIServiceAdapter)
     adapter.generate_reply.return_value = "Test response"
@@ -145,7 +156,7 @@ def assistant_message() -> Message:
 @pytest.fixture
 def image_message() -> Message:
     """Create a message with image content."""
-    from src.domain.channel.value_objects import MessageContent
+    from guildpulse.domain.channel.value_objects import MessageContent
 
     # Using Any for complex nested dict types that can't be precisely typed
     content: Any = [
@@ -163,8 +174,8 @@ def image_message() -> Message:
 @pytest.fixture
 def process_user_turn(mock_ai_adapter: mock.Mock) -> Any:
     """Create a ProcessUserTurn instance."""
-    from src.application.messaging.handlers import ProcessUserTurn
-    from src.infrastructure.persistence.memory.repository import (
+    from guildpulse.application.messaging.handlers import ProcessUserTurn
+    from guildpulse.infrastructure.persistence.memory.repository import (
         InMemoryChannelRepository,
     )
 
@@ -175,8 +186,8 @@ def process_user_turn(mock_ai_adapter: mock.Mock) -> Any:
 @pytest.fixture
 def clear_channel_history() -> Any:
     """Create a ClearChannelHistory instance."""
-    from src.application.messaging.handlers import ClearChannelHistory
-    from src.infrastructure.persistence.memory.repository import (
+    from guildpulse.application.messaging.handlers import ClearChannelHistory
+    from guildpulse.infrastructure.persistence.memory.repository import (
         InMemoryChannelRepository,
     )
 
@@ -192,7 +203,7 @@ def clear_channel_history() -> Any:
 @pytest.fixture
 async def async_openai_client():
     """Create an async OpenAI client for async tests."""
-    from src.infrastructure.ai.openai.client import OpenAIClient
+    from guildpulse.infrastructure.ai.openai.client import OpenAIClient
 
     client = OpenAIClient(
         api_key="test-key",

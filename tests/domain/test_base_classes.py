@@ -1,10 +1,10 @@
 """Tests for domain base classes."""
 
 import pytest
-from src.domain.shared.entity import Entity
-from src.domain.shared.value_object import ValueObject
-from src.domain.shared.aggregate_root import AggregateRoot
-from src.domain.shared.domain_event import DomainEvent
+from guildpulse.domain.shared.entity import Entity
+from guildpulse.domain.shared.value_object import ValueObject
+from guildpulse.domain.shared.aggregate_root import AggregateRoot
+from guildpulse.domain.shared.domain_event import DomainEvent
 
 
 class TestEntity:

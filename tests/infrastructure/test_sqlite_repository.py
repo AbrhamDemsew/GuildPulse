@@ -6,9 +6,9 @@ from typing import Generator
 
 import pytest
 
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
-from src.infrastructure.persistence.sqlite.repository import SQLiteChannelRepository
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.infrastructure.persistence.sqlite.repository import SQLiteChannelRepository
 
 
 @pytest.fixture
@@ -43,7 +43,7 @@ class TestSQLiteRepository:
 
     def test_get_nonexistent_channel(self, repo: SQLiteChannelRepository) -> None:
         """Test getting a non-existent channel raises ChannelNotFoundError."""
-        from src.domain.shared.errors import ChannelNotFoundError
+        from guildpulse.domain.shared.errors import ChannelNotFoundError
 
         with pytest.raises(ChannelNotFoundError) as exc_info:
             repo.get(999)

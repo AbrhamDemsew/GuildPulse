@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from src.frameworks_drivers.discord.bot import (
+from guildpulse.frameworks_drivers.discord.bot import (
     ConfirmClearView,
     handle_message_processing,
     setup_discord_bot,
@@ -191,7 +191,7 @@ class TestHandleMessageProcessing:
             return func(*args, **kwargs)
 
         with patch(
-            "src.frameworks_drivers.discord.bot.asyncio.to_thread",
+            "guildpulse.frameworks_drivers.discord.bot.asyncio.to_thread",
             side_effect=to_thread_sync,
         ):
             await handle_message_processing(
@@ -235,7 +235,7 @@ class TestHandleMessageProcessing:
             return func(*args, **kwargs)
 
         with patch(
-            "src.frameworks_drivers.discord.bot.asyncio.to_thread",
+            "guildpulse.frameworks_drivers.discord.bot.asyncio.to_thread",
             side_effect=to_thread_sync,
         ):
             await handle_message_processing(
@@ -273,7 +273,7 @@ class TestHandleMessageProcessing:
             return func(*args, **kwargs)
 
         with patch(
-            "src.frameworks_drivers.discord.bot.asyncio.to_thread",
+            "guildpulse.frameworks_drivers.discord.bot.asyncio.to_thread",
             side_effect=to_thread_sync,
         ):
             await handle_message_processing(
@@ -288,8 +288,8 @@ class TestSetupDiscordBot:
 
     def test_setup_discord_bot_creates_bot(self):
         """Test that setup_discord_bot creates a bot."""
-        with patch("src.frameworks_drivers.discord.bot.setup_logging"):
-            with patch("src.config.get_settings") as mock_get_settings:
+        with patch("guildpulse.frameworks_drivers.discord.bot.setup_logging"):
+            with patch("guildpulse.config.get_settings") as mock_get_settings:
                 mock_settings = Mock(
                     DISCORD_TOKEN="test-token",
                     OPENAI_API_KEY="test-key",

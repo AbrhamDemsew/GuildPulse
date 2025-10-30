@@ -1,8 +1,8 @@
 """Tests for concurrent access to Channel aggregate."""
 
 import threading
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
 
 
 def test_concurrent_message_additions():

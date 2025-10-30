@@ -7,11 +7,11 @@ from unittest.mock import Mock
 
 import pytest
 
-from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
-from src.config import Settings
-from src.domain.channel.aggregate import Channel
-from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
-from src.infrastructure.di.composition_root import CompositionRoot
+from guildpulse.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
+from guildpulse.config import Settings
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
+from guildpulse.infrastructure.di.composition_root import CompositionRoot
 
 
 @pytest.fixture

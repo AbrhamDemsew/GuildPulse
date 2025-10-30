@@ -4,7 +4,7 @@ from typing import Callable
 
 import pytest
 
-from src.domain.shared.errors import (
+from guildpulse.domain.shared.errors import (
     ChannelNotFoundError,
     ConversationHistoryError,
     DomainError,

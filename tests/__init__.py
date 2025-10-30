@@ -1,1 +1,1 @@
-"""Test package for py-besto-bot."""
+"""Test package for guildpulse."""

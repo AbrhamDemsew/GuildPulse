@@ -1,9 +1,9 @@
 """Tests for Channel aggregate."""
 
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.events import MessageAdded
-from src.domain.channel.value_objects import Message, MessageContent
-from src.domain.shared.aggregate_root import AggregateRoot
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.events import MessageAdded
+from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.domain.shared.aggregate_root import AggregateRoot
 
 
 def test_channel_is_aggregate_root():

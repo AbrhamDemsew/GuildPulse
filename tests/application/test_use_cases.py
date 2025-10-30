@@ -5,11 +5,11 @@ from typing import Any
 from unittest import mock
 from unittest.mock import Mock, patch
 
-from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
-from src.domain.shared.errors import ChannelNotFoundError
-from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
+from guildpulse.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.domain.shared.errors import ChannelNotFoundError
+from guildpulse.infrastructure.persistence.memory.repository import InMemoryChannelRepository
 
 
 class TestProcessUserTurn:

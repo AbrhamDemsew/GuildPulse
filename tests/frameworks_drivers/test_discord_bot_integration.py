@@ -5,8 +5,8 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from src.frameworks_drivers.discord.bot import handle_message_processing
-from src.frameworks_drivers.discord.rate_limiter import RateLimiter
+from guildpulse.frameworks_drivers.discord.bot import handle_message_processing
+from guildpulse.frameworks_drivers.discord.rate_limiter import RateLimiter
 
 
 @pytest.mark.asyncio

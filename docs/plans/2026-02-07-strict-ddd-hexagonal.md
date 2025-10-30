@@ -19,21 +19,21 @@
 ### Task 1: Create Domain Base Classes
 
 **Files:**
-- Create: `src/domain/shared/entity.py`
-- Create: `src/domain/shared/value_object.py`
-- Create: `src/domain/shared/aggregate_root.py`
-- Create: `src/domain/shared/domain_event.py` (enhance existing)
-- Create: `src/domain/shared/errors.py` (enhance existing)
+- Create: `guildpulse/domain/shared/entity.py`
+- Create: `guildpulse/domain/shared/value_object.py`
+- Create: `guildpulse/domain/shared/aggregate_root.py`
+- Create: `guildpulse/domain/shared/domain_event.py` (enhance existing)
+- Create: `guildpulse/domain/shared/errors.py` (enhance existing)
 
 **Step 1: Write the failing test**
 
 ```python
 # tests/domain/test_base_classes.py
 import pytest
-from src.domain.shared.entity import Entity
-from src.domain.shared.value_object import ValueObject
-from src.domain.shared.aggregate_root import AggregateRoot
-from src.domain.shared.domain_event import DomainEvent
+from guildpulse.domain.shared.entity import Entity
+from guildpulse.domain.shared.value_object import ValueObject
+from guildpulse.domain.shared.aggregate_root import AggregateRoot
+from guildpulse.domain.shared.domain_event import DomainEvent
 
 
 class TestEntity:
@@ -115,12 +115,12 @@ class TestDomainEvent:
 **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/domain/test_base_classes.py -v`
-Expected: FAIL with "No module named 'src.domain.shared.entity'" etc.
+Expected: FAIL with "No module named 'guildpulse.domain.shared.entity'" etc.
 
 **Step 3: Write minimal implementation**
 
 ```python
-# src/domain/shared/entity.py
+# guildpulse/domain/shared/entity.py
 """Base class for entities with identity."""
 from __future__ import annotations
 from dataclasses import dataclass
@@ -145,7 +145,7 @@ class Entity(Generic[ID]):
 ```
 
 ```python
-# src/domain/shared/value_object.py
+# guildpulse/domain/shared/value_object.py
 """Base class for immutable value objects."""
 from __future__ import annotations
 from dataclasses import dataclass
@@ -175,16 +175,16 @@ class ValueObject(Generic[Props]):
 ```
 
 ```python
-# src/domain/shared/aggregate_root.py
+# guildpulse/domain/shared/aggregate_root.py
 """Base class for aggregate roots."""
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, List
 
-from src.domain.shared.domain_event import DomainEvent
+from guildpulse.domain.shared.domain_event import DomainEvent
 
 if TYPE_CHECKING:
-    from src.domain.shared.entity import Entity
+    from guildpulse.domain.shared.entity import Entity
 
 
 @dataclass
@@ -208,7 +208,7 @@ class AggregateRoot(Entity[ID]):
 ```
 
 ```python
-# src/domain/shared/domain_event.py
+# guildpulse/domain/shared/domain_event.py
 """Domain events base class."""
 from __future__ import annotations
 from dataclasses import dataclass
@@ -249,10 +249,10 @@ Expected: PASS (3 test classes, 8+ tests)
 **Step 5: Commit**
 
 ```bash
-git add src/domain/shared/entity.py \
-        src/domain/shared/value_object.py \
-        src/domain/shared/aggregate_root.py \
-        src/domain/shared/domain_event.py \
+git add guildpulse/domain/shared/entity.py \
+        guildpulse/domain/shared/value_object.py \
+        guildpulse/domain/shared/aggregate_root.py \
+        guildpulse/domain/shared/domain_event.py \
         tests/domain/test_base_classes.py
 git commit -m "feat: add domain base classes for entity, value_object, aggregate_root, domain_event"
 ```
@@ -262,13 +262,13 @@ git commit -m "feat: add domain base classes for entity, value_object, aggregate
 ### Task 2: Refactor Channel Aggregate
 
 **Files:**
-- Modify: `src/domain/channel/aggregate.py`
+- Modify: `guildpulse/domain/channel/aggregate.py`
 - Test: `tests/domain/test_channel.py`
 
 **Step 1: Update Channel to extend AggregateRoot**
 
 ```python
-# src/domain/channel/aggregate.py
+# guildpulse/domain/channel/aggregate.py
 """Channel aggregate for managing conversation history."""
 
 from __future__ import annotations
@@ -277,12 +277,12 @@ import threading
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from src.domain.channel.events import ConversationCleared, MessageAdded
-from src.domain.shared.aggregate_root import AggregateRoot
-from src.domain.shared.domain_event import DomainEvent
+from guildpulse.domain.channel.events import ConversationCleared, MessageAdded
+from guildpulse.domain.shared.aggregate_root import AggregateRoot
+from guildpulse.domain.shared.domain_event import DomainEvent
 
 if TYPE_CHECKING:
-    from src.domain.channel.value_objects import Message
+    from guildpulse.domain.channel.value_objects import Message
 
 
 @dataclass
@@ -335,9 +335,9 @@ class Channel(AggregateRoot[int]):
 ```python
 # tests/domain/test_channel.py
 import pytest
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
-from src.domain.shared.domain_event import DomainEvent
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.domain.shared.domain_event import DomainEvent
 
 
 def test_channel_is_aggregate_root():
@@ -407,7 +407,7 @@ Expected: PASS
 **Step 6: Commit**
 
 ```bash
-git add src/domain/channel/aggregate.py tests/domain/test_channel.py
+git add guildpulse/domain/channel/aggregate.py tests/domain/test_channel.py
 git commit -m "refactor: make Channel extend AggregateRoot"
 ```
 
@@ -416,13 +416,13 @@ git commit -m "refactor: make Channel extend AggregateRoot"
 ### Task 3: Refactor Message to Entity
 
 **Files:**
-- Modify: `src/domain/channel/value_objects.py`
+- Modify: `guildpulse/domain/channel/value_objects.py`
 - Test: `tests/domain/test_value_objects.py`
 
 **Step 1: Update Message to extend Entity**
 
 ```python
-# src/domain/channel/value_objects.py
+# guildpulse/domain/channel/value_objects.py
 """Value objects for the domain model."""
 
 from dataclasses import dataclass, field
@@ -430,8 +430,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from src.domain.shared.entity import Entity
-from src.domain.shared.errors import MessageValidationError
+from guildpulse.domain.shared.entity import Entity
+from guildpulse.domain.shared.errors import MessageValidationError
 
 __all__ = ["MessageContent", "Message", "MessageRole"]
 
@@ -493,8 +493,8 @@ class Message(Entity[str]):
 ```python
 # tests/domain/test_value_objects.py
 import pytest
-from src.domain.channel.value_objects import Message, MessageContent, MessageRole
-from src.domain.shared.entity import Entity
+from guildpulse.domain.channel.value_objects import Message, MessageContent, MessageRole
+from guildpulse.domain.shared.entity import Entity
 
 
 def test_message_is_entity():
@@ -543,7 +543,7 @@ Expected: PASS
 **Step 6: Commit**
 
 ```bash
-git add src/domain/channel/value_objects.py tests/domain/test_value_objects.py
+git add guildpulse/domain/channel/value_objects.py tests/domain/test_value_objects.py
 git commit -m "refactor: make Message an Entity with identity"
 ```
 
@@ -552,23 +552,23 @@ git commit -m "refactor: make Message an Entity with identity"
 ### Task 4: Refactor Domain Events
 
 **Files:**
-- Modify: `src/domain/channel/events.py`
+- Modify: `guildpulse/domain/channel/events.py`
 - Test: `tests/domain/test_events.py`
 
 **Step 1: Update events to use new DomainEvent base**
 
 ```python
-# src/domain/channel/events.py
+# guildpulse/domain/channel/events.py
 """Domain events for the Channel aggregate."""
 
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from src.domain.shared.domain_event import DomainEvent
+from guildpulse.domain.shared.domain_event import DomainEvent
 
 if TYPE_CHECKING:
-    from src.domain.channel.aggregate import Channel
+    from guildpulse.domain.channel.aggregate import Channel
 
 
 @dataclass(frozen=True)
@@ -620,10 +620,10 @@ class ConversationCleared(DomainEvent):
 ```python
 # tests/domain/test_events.py
 import pytest
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.events import MessageAdded, ConversationCleared
-from src.domain.channel.value_objects import Message, MessageContent
-from src.domain.shared.domain_event import DomainEvent
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.events import MessageAdded, ConversationCleared
+from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.domain.shared.domain_event import DomainEvent
 
 
 def test_message_added_event_creation():
@@ -680,7 +680,7 @@ Expected: PASS
 **Step 6: Commit**
 
 ```bash
-git add src/domain/channel/events.py tests/domain/test_events.py
+git add guildpulse/domain/channel/events.py tests/domain/test_events.py
 git commit -m "refactor: make domain events extend DomainEvent base"
 ```
 
@@ -691,9 +691,9 @@ git commit -m "refactor: make domain events extend DomainEvent base"
 ### Task 5: Create Domain-Specific Ports
 
 **Files:**
-- Create: `src/application/ports/channel_repository_port.py`
-- Create: `src/application/ports/ai_service_port.py`
-- Create: `src/application/ports/config_port.py`
+- Create: `guildpulse/application/ports/channel_repository_port.py`
+- Create: `guildpulse/application/ports/ai_service_port.py`
+- Create: `guildpulse/application/ports/config_port.py`
 - Test: `tests/application/test_ports.py`
 
 **Step 1: Write the failing test**
@@ -708,7 +708,7 @@ from typing import Protocol
 class TestChannelRepositoryPort:
     def test_channel_repository_protocol(self):
         """Test that ChannelRepositoryPort is properly defined."""
-        from src.application.ports.channel_repository_port import IChannelRepositoryPort
+        from guildpulse.application.ports.channel_repository_port import IChannelRepositoryPort
         
         # Should be a Protocol
         assert hasattr(IChannelRepositoryPort, "save")
@@ -719,7 +719,7 @@ class TestChannelRepositoryPort:
 class TestAIServicePort:
     def test_ai_service_protocol(self):
         """Test that AIServicePort is properly defined."""
-        from src.application.ports.ai_service_port import IAIServicePort
+        from guildpulse.application.ports.ai_service_port import IAIServicePort
         
         # Should be a Protocol
         assert hasattr(IAIServicePort, "generate_reply")
@@ -728,7 +728,7 @@ class TestAIServicePort:
 class TestConfigPort:
     def test_config_port_protocol(self):
         """Test that ConfigPort is properly defined."""
-        from src.application.ports.config_port import IConfigPort
+        from guildpulse.application.ports.config_port import IConfigPort
         
         # Should be a Protocol
         assert hasattr(IConfigPort, "get_discord_token")
@@ -743,11 +743,11 @@ Expected: FAIL with import errors
 **Step 3: Write minimal implementation**
 
 ```python
-# src/application/ports/channel_repository_port.py
+# guildpulse/application/ports/channel_repository_port.py
 """Protocol for channel repository operations."""
 from typing import Protocol
 
-from src.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.aggregate import Channel
 
 
 class IChannelRepositoryPort(Protocol):
@@ -764,11 +764,11 @@ class IChannelRepositoryPort(Protocol):
 ```
 
 ```python
-# src/application/ports/ai_service_port.py
+# guildpulse/application/ports/ai_service_port.py
 """Protocol for AI service operations."""
 from typing import Protocol
 
-from src.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.aggregate import Channel
 
 
 class IAIServicePort(Protocol):
@@ -779,7 +779,7 @@ class IAIServicePort(Protocol):
 ```
 
 ```python
-# src/application/ports/config_port.py
+# guildpulse/application/ports/config_port.py
 """Protocol for configuration access."""
 from typing import Protocol
 
@@ -817,9 +817,9 @@ Expected: PASS
 **Step 5: Commit**
 
 ```bash
-git add src/application/ports/channel_repository_port.py \
-        src/application/ports/ai_service_port.py \
-        src/application/ports/config_port.py \
+git add guildpulse/application/ports/channel_repository_port.py \
+        guildpulse/application/ports/ai_service_port.py \
+        guildpulse/application/ports/config_port.py \
         tests/application/test_ports.py
 git commit -m "feat: add application port protocols for repository, AI, and config"
 ```
@@ -829,22 +829,22 @@ git commit -m "feat: add application port protocols for repository, AI, and conf
 ### Task 6: Update Use Cases to Use New Ports
 
 **Files:**
-- Modify: `src/application/messaging/handlers.py`
-- Modify: `src/application/messaging/ports.py` (deprecate old ports)
+- Modify: `guildpulse/application/messaging/handlers.py`
+- Modify: `guildpulse/application/messaging/ports.py` (deprecate old ports)
 
 **Step 1: Update handlers to use new ports**
 
 ```python
-# src/application/messaging/handlers.py
+# guildpulse/application/messaging/handlers.py
 """Use cases for messaging operations."""
 
 import logging
 
-from src.application.messaging.ports import IAIServicePort
-from src.application.ports.channel_repository_port import IChannelRepositoryPort
-from src.config import get_settings
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
+from guildpulse.application.messaging.ports import IAIServicePort
+from guildpulse.application.ports.channel_repository_port import IChannelRepositoryPort
+from guildpulse.config import get_settings
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
 
 
 class ProcessUserTurn:
@@ -938,12 +938,12 @@ class ClearChannelHistory:
 **Step 2: Deprecate old ports file**
 
 ```python
-# src/application/messaging/ports.py
+# guildpulse/application/messaging/ports.py
 """Deprecated: Application ports for domain services."""
 
 from typing import Protocol
 
-from src.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.aggregate import Channel
 
 
 class AIServicePort(Protocol):
@@ -967,11 +967,11 @@ class AIServicePort(Protocol):
 import pytest
 from unittest.mock import Mock
 
-from src.application.ports.channel_repository_port import IChannelRepositoryPort
-from src.application.ports.ai_service_port import IAIServicePort
-from src.application.messaging.handlers import ProcessUserTurn, ClearChannelHistory
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.value_objects import Message, MessageContent
+from guildpulse.application.ports.channel_repository_port import IChannelRepositoryPort
+from guildpulse.application.ports.ai_service_port import IAIServicePort
+from guildpulse.application.messaging.handlers import ProcessUserTurn, ClearChannelHistory
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.value_objects import Message, MessageContent
 
 
 @pytest.fixture
@@ -1020,8 +1020,8 @@ Expected: PASS
 **Step 7: Commit**
 
 ```bash
-git add src/application/messaging/handlers.py \
-        src/application/messaging/ports.py \
+git add guildpulse/application/messaging/handlers.py \
+        guildpulse/application/messaging/ports.py \
         tests/application/test_use_cases.py
 git commit -m "refactor: update use cases to use new application ports"
 ```
@@ -1033,18 +1033,18 @@ git commit -m "refactor: update use cases to use new application ports"
 ### Task 7: Update Repository Implementation
 
 **Files:**
-- Modify: `src/infrastructure/persistence/memory/repository.py`
+- Modify: `guildpulse/infrastructure/persistence/memory/repository.py`
 - Create: `tests/infrastructure/test_memory_repository.py`
 
 **Step 1: Update repository to use new port**
 
 ```python
-# src/infrastructure/persistence/memory/repository.py
+# guildpulse/infrastructure/persistence/memory/repository.py
 """In-memory implementation of ChannelRepository."""
 
-from src.application.ports.channel_repository_port import IChannelRepositoryPort
-from src.domain.channel.aggregate import Channel
-from src.domain.shared.errors import ChannelNotFoundError
+from guildpulse.application.ports.channel_repository_port import IChannelRepositoryPort
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.shared.errors import ChannelNotFoundError
 
 
 class InMemoryChannelRepository(IChannelRepositoryPort):
@@ -1077,10 +1077,10 @@ class InMemoryChannelRepository(IChannelRepositoryPort):
 """Tests for in-memory channel repository."""
 import pytest
 
-from src.application.ports.channel_repository_port import IChannelRepositoryPort
-from src.domain.channel.aggregate import Channel
-from src.domain.shared.errors import ChannelNotFoundError
-from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
+from guildpulse.application.ports.channel_repository_port import IChannelRepositoryPort
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.shared.errors import ChannelNotFoundError
+from guildpulse.infrastructure.persistence.memory.repository import InMemoryChannelRepository
 
 
 class TestInMemoryChannelRepository:
@@ -1158,7 +1158,7 @@ Expected: PASS
 **Step 6: Commit**
 
 ```bash
-git add src/infrastructure/persistence/memory/repository.py \
+git add guildpulse/infrastructure/persistence/memory/repository.py \
         tests/infrastructure/test_memory_repository.py
 git commit -m "refactor: rename repository to InMemoryChannelRepository"
 ```
@@ -1168,17 +1168,17 @@ git commit -m "refactor: rename repository to InMemoryChannelRepository"
 ### Task 8: Update OpenAI Adapter
 
 **Files:**
-- Modify: `src/infrastructure/ai/openai/adapter.py`
+- Modify: `guildpulse/infrastructure/ai/openai/adapter.py`
 
 **Step 1: Update adapter to use new ports**
 
 ```python
-# src/infrastructure/ai/openai/adapter.py
+# guildpulse/infrastructure/ai/openai/adapter.py
 """OpenAI adapter implementation."""
 
-from src.application.ports.ai_service_port import IAIServicePort
-from src.config import get_settings
-from src.infrastructure.ai.openai.client import OpenAIClient
+from guildpulse.application.ports.ai_service_port import IAIServicePort
+from guildpulse.config import get_settings
+from guildpulse.infrastructure.ai.openai.client import OpenAIClient
 
 
 class OpenAIServiceAdapter(IAIServicePort):
@@ -1216,9 +1216,9 @@ class OpenAIServiceAdapter(IAIServicePort):
 import pytest
 from unittest.mock import Mock, patch
 
-from src.application.ports.ai_service_port import IAIServicePort
-from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
-from src.infrastructure.ai.openai.client import OpenAIClient
+from guildpulse.application.ports.ai_service_port import IAIServicePort
+from guildpulse.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
+from guildpulse.infrastructure.ai.openai.client import OpenAIClient
 
 
 @pytest.fixture
@@ -1287,7 +1287,7 @@ Expected: PASS
 **Step 6: Commit**
 
 ```bash
-git add src/infrastructure/ai/openai/adapter.py \
+git add guildpulse/infrastructure/ai/openai/adapter.py \
         tests/infrastructure/test_openai_adapter.py
 git commit -m "refactor: OpenAIServiceAdapter now implements IAIServicePort"
 ```
@@ -1299,22 +1299,22 @@ git commit -m "refactor: OpenAIServiceAdapter now implements IAIServicePort"
 ### Task 9: Update Composition Root
 
 **Files:**
-- Modify: `src/infrastructure/di/composition_root.py`
+- Modify: `guildpulse/infrastructure/di/composition_root.py`
 - Test: `tests/infrastructure/test_composition_root.py`
 
 **Step 1: Update composition root**
 
 ```python
-# src/infrastructure/di/composition_root.py
+# guildpulse/infrastructure/di/composition_root.py
 """Dependency injection composition root."""
 
-from src.application.messaging.handlers import ProcessUserTurn, ClearChannelHistory
-from src.config import Settings
-from src.application.ports.channel_repository_port import IChannelRepositoryPort
-from src.application.ports.ai_service_port import IAIServicePort
-from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
-from src.infrastructure.ai.openai.client import OpenAIClient
-from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
+from guildpulse.application.messaging.handlers import ProcessUserTurn, ClearChannelHistory
+from guildpulse.config import Settings
+from guildpulse.application.ports.channel_repository_port import IChannelRepositoryPort
+from guildpulse.application.ports.ai_service_port import IAIServicePort
+from guildpulse.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
+from guildpulse.infrastructure.ai.openai.client import OpenAIClient
+from guildpulse.infrastructure.persistence.memory.repository import InMemoryChannelRepository
 
 
 class CompositionRoot:
@@ -1364,11 +1364,11 @@ class CompositionRoot:
 import pytest
 from unittest.mock import Mock
 
-from src.application.ports.channel_repository_port import IChannelRepositoryPort
-from src.application.ports.ai_service_port import IAIServicePort
-from src.config import Settings
-from src.infrastructure.di.composition_root import CompositionRoot
-from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
+from guildpulse.application.ports.channel_repository_port import IChannelRepositoryPort
+from guildpulse.application.ports.ai_service_port import IAIServicePort
+from guildpulse.config import Settings
+from guildpulse.infrastructure.di.composition_root import CompositionRoot
+from guildpulse.infrastructure.persistence.memory.repository import InMemoryChannelRepository
 
 
 @pytest.fixture
@@ -1451,7 +1451,7 @@ Expected: PASS
 **Step 6: Commit**
 
 ```bash
-git add src/infrastructure/di/composition_root.py \
+git add guildpulse/infrastructure/di/composition_root.py \
         tests/infrastructure/test_composition_root.py
 git commit -m "refactor: composition root uses new port interfaces"
 ```
@@ -1463,16 +1463,16 @@ git commit -m "refactor: composition root uses new port interfaces"
 ### Task 10: Update Discord Bot
 
 **Files:**
-- Modify: `src/frameworks_drivers/discord/bot.py`
+- Modify: `guildpulse/frameworks_drivers/discord/bot.py`
 
 **Step 1: Update bot to use new DI**
 
 ```python
-# src/frameworks_drivers/discord/bot.py (partial - key changes only)
+# guildpulse/frameworks_drivers/discord/bot.py (partial - key changes only)
 # ...
-from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
-from src.application.ports.channel_repository_port import IChannelRepositoryPort
-from src.application.ports.ai_service_port import IAIServicePort
+from guildpulse.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
+from guildpulse.application.ports.channel_repository_port import IChannelRepositoryPort
+from guildpulse.application.ports.ai_service_port import IAIServicePort
 # ...
 
     def get_lock(channel_id: int) -> asyncio.Lock:
@@ -1503,8 +1503,8 @@ from src.application.ports.ai_service_port import IAIServicePort
 import pytest
 from unittest.mock import Mock, AsyncMock, patch
 
-from src.application.ports.channel_repository_port import IChannelRepositoryPort
-from src.application.ports.ai_service_port import IAIServicePort
+from guildpulse.application.ports.channel_repository_port import IChannelRepositoryPort
+from guildpulse.application.ports.ai_service_port import IAIServicePort
 
 
 class TestDiscordBotDI:
@@ -1512,7 +1512,7 @@ class TestDiscordBotDI:
 
     def test_bot_uses_repository_port(self):
         """Test that bot uses IChannelRepositoryPort."""
-        with patch("src.frameworks_drivers.discord.bot.setup_discord_bot") as mock_setup:
+        with patch("guildpulse.frameworks_drivers.discord.bot.setup_discord_bot") as mock_setup:
             # The bot should be configured to use port interfaces
             pass  # Integration test - verified by unit tests of handlers
 
@@ -1530,7 +1530,7 @@ Expected: PASS (existing tests still pass)
 **Step 5: Commit**
 
 ```bash
-git add src/frameworks_drivers/discord/bot.py \
+git add guildpulse/frameworks_drivers/discord/bot.py \
         tests/frameworks_drivers/test_discord_bot.py
 git commit -m "refactor: Discord bot integration uses new port interfaces"
 ```
@@ -1549,7 +1549,7 @@ git commit -m "refactor: Discord bot integration uses new port interfaces"
 ```markdown
 # Ubiquitous Language
 
-This document defines the shared vocabulary between developers and domain experts for the Py-Besto-Bot project.
+This document defines the shared vocabulary between developers and domain experts for the GuildPulse project.
 
 ## Core Concepts
 
@@ -1719,11 +1719,11 @@ git commit -m "docs: add ubiquitous language documentation"
 ```markdown
 # DDD Strategic Patterns
 
-This document describes the strategic DDD patterns used in Py-Besto-Bot, following Eric Evans' Domain-Driven Design and Vaughn Vernon's Implementing Domain-Driven Design.
+This document describes the strategic DDD patterns used in GuildPulse, following Eric Evans' Domain-Driven Design and Vaughn Vernon's Implementing Domain-Driven Design.
 
 ## Overview
 
-Py-Besto-Bot follows a **single bounded context** approach for a Discord bot with AI capabilities. The domain is divided into subdomains to identify core business capabilities.
+GuildPulse follows a **single bounded context** approach for a GuildPulse Discord community assistant with AI. The domain is divided into subdomains to identify core business capabilities.
 
 ## Subdomains
 
@@ -1787,7 +1787,7 @@ Py-Besto-Bot follows a **single bounded context** approach for a Discord bot wit
 
 ### Single Bounded Context
 
-Py-Besto-Bot uses a **single bounded context** because:
+GuildPulse uses a **single bounded context** because:
 
 1. **Domain is small** - One main concept: channel conversations
 2. **Team size** - Small team (likely 1-3 developers)
@@ -1797,7 +1797,7 @@ Py-Besto-Bot uses a **single bounded context** because:
 **Context Map:**
 ```
 ┌─────────────────────────────────────────────────────┐
-│          Py-Besto-Bot (Single Context)              │
+│          GuildPulse (Single Context)              │
 │                                                     │
 │  Subdomains:                                        │
 │  - Conversation Intelligence (Core)                 │
@@ -1938,7 +1938,7 @@ Potential additions:
 - Handle multimodal content
 - Abstract client details
 
-**Location:** `src/infrastructure/ai/openai/adapter.py`
+**Location:** `guildpulse/infrastructure/ai/openai/adapter.py`
 
 ## Future Evolution
 
@@ -1989,7 +1989,7 @@ git commit -m "docs: add DDD strategic patterns documentation"
 
 ## Context
 
-Py-Besto-Bot was built with Clean Architecture but had some DDD and Hexagonal gaps:
+GuildPulse was built with Clean Architecture but had some DDD and Hexagonal gaps:
 - Domain base classes missing (Entity, ValueObject, AggregateRoot)
 - Domain events not extending base class
 - Repository names inconsistent (Repository vs ChannelRepository)
@@ -2076,7 +2076,7 @@ pytest tests/ -v --tb=short
 **Step 2: Check coverage**
 
 ```bash
-pytest tests/ --cov=src --cov-report=term-missing -v
+pytest tests/ --cov=guildpulse --cov-report=term-missing -v
 ```
 
 **Expected:** 80%+ coverage
@@ -2084,7 +2084,7 @@ pytest tests/ --cov=src --cov-report=term-missing -v
 **Step 3: Type check**
 
 ```bash
-basedpyright src/
+basedpyright guildpulse/
 ```
 
 **Expected:** 0 errors
@@ -2092,7 +2092,7 @@ basedpyright src/
 **Step 4: Lint check**
 
 ```bash
-ruff check src/ tests/
+ruff check guildpulse/ tests/
 ```
 
 **Expected:** 0 errors
@@ -2100,7 +2100,7 @@ ruff check src/ tests/
 **Step 5: Format check**
 
 ```bash
-black src/ tests/ --check
+black guildpulse/ tests/ --check
 ```
 
 **Expected:** All files formatted
@@ -2152,7 +2152,7 @@ git commit -m "chore: pre-commit hooks pass for refactored code"
 **Step 1: Build image**
 
 ```bash
-docker build -t py-besto-bot:latest .
+docker build -t guildpulse:latest .
 ```
 
 **Expected:** Build succeeds
@@ -2168,7 +2168,7 @@ docker-compose up -d --build
 **Step 3: Verify logs**
 
 ```bash
-docker-compose logs py-besto-bot
+docker-compose logs guildpulse
 ```
 
 **Expected:** No errors

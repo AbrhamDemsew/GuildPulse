@@ -1,9 +1,9 @@
 """Tests for domain events."""
 
-from src.domain.channel.aggregate import Channel
-from src.domain.channel.events import MessageAdded, ConversationCleared
-from src.domain.channel.value_objects import Message, MessageContent
-from src.domain.shared.domain_event import DomainEvent
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.domain.channel.events import MessageAdded, ConversationCleared
+from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.domain.shared.domain_event import DomainEvent
 
 
 def test_message_added_event_creation():

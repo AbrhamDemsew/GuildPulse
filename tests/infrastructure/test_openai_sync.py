@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.infrastructure.ai.openai.client import OpenAIClient
+from guildpulse.infrastructure.ai.openai.client import OpenAIClient
 
 # ============================================================================
 # TestOpenAIClientSync - Basic functionality tests
@@ -69,7 +69,7 @@ class TestOpenAIClientSync:
         mock_response.choices = [Mock()]
         mock_response.choices[0].message.content = "Thinking response"
 
-        with patch("src.infrastructure.ai.openai.client.OpenAI") as mock_openai:
+        with patch("guildpulse.infrastructure.ai.openai.client.OpenAI") as mock_openai:
             mock_client_instance = Mock()
             mock_client_instance.chat.completions.create = Mock(return_value=mock_response)
             mock_openai.return_value = mock_client_instance
@@ -109,7 +109,7 @@ class TestOpenAIClientSync:
 
     def test_chat_completion_error_logging(self):
         """Test error logging in sync method."""
-        with patch("src.infrastructure.ai.openai.client.logging") as mock_logging:
+        with patch("guildpulse.infrastructure.ai.openai.client.logging") as mock_logging:
             mock_logger = Mock()
             mock_logging.getLogger.return_value = mock_logger
 
@@ -156,7 +156,7 @@ class TestOpenAIClientSyncErrorHandling:
 
     def test_chat_completion_logging_on_error(self):
         """Test that errors are logged."""
-        with patch("src.infrastructure.ai.openai.client.logging") as mock_logging:
+        with patch("guildpulse.infrastructure.ai.openai.client.logging") as mock_logging:
             mock_logger = Mock()
             mock_logging.getLogger.return_value = mock_logger
 

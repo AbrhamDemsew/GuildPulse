@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.config import Settings, get_settings, setup_logging
+from guildpulse.config import Settings, get_settings, setup_logging
 
 
 class TestSettings:
@@ -168,8 +168,7 @@ class TestSettings:
         ):
             settings = Settings()
 
-            assert "Discord" in settings.CHAT_SYSTEM_PROMPT
-            assert "Discord" in settings.CHAT_SYSTEM_PROMPT
+            assert "GuildPulse" in settings.CHAT_SYSTEM_PROMPT
 
 
 class TestGetSettings:
@@ -191,7 +190,7 @@ class TestGetSettings:
 
     def test_get_settings_error_logging(self):
         """Test that get_settings handles errors gracefully."""
-        with patch("src.config.get_settings") as mock_get_settings:
+        with patch("guildpulse.config.get_settings") as mock_get_settings:
             mock_get_settings.side_effect = Exception("Test error")
             with pytest.raises(Exception):
                 mock_get_settings()

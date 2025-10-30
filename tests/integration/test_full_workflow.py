@@ -2,11 +2,11 @@
 
 import pytest
 
-from src.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
-from src.domain.channel.aggregate import Channel
-from src.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
-from src.infrastructure.ai.openai.client import OpenAIClient
-from src.infrastructure.persistence.memory.repository import InMemoryChannelRepository
+from guildpulse.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
+from guildpulse.domain.channel.aggregate import Channel
+from guildpulse.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
+from guildpulse.infrastructure.ai.openai.client import OpenAIClient
+from guildpulse.infrastructure.persistence.memory.repository import InMemoryChannelRepository
 from unittest.mock import Mock
 
 

@@ -1,6 +1,6 @@
 # Testing Documentation
 
-This document describes the testing strategy and patterns used in the py-besto-bot project.
+This document describes the testing strategy and patterns used in the guildpulse project.
 
 ## Overview
 
@@ -90,7 +90,7 @@ async def test_async_operation() -> None:
 Used for external dependencies:
 
 ```python
-@patch("src.infrastructure.ai.OpenAIClient")
+@patch("guildpulse.infrastructure.ai.OpenAIClient")
 def test_with_mock(mock_client: Mock) -> None:
     """Test with mocked OpenAI client."""
     mock_client.return_value.chat_completion_async.return_value = "test"
@@ -103,7 +103,7 @@ def test_with_mock(mock_client: Mock) -> None:
 All code is type-checked with basedpyright:
 
 ```bash
-basedpyright src/ tests/
+basedpyright guildpulse/ tests/
 ```
 
 ## Running Tests
@@ -117,7 +117,7 @@ pytest
 ### With Coverage
 
 ```bash
-pytest --cov=src --cov-report=term-missing -v
+pytest --cov=guildpulse --cov-report=term-missing -v
 ```
 
 ### Specific Test Files
@@ -149,21 +149,21 @@ pytest -vv
 ### Formatting
 
 ```bash
-black src/ tests/
-black --check src/ tests/  # Check only
+black guildpulse/ tests/
+black --check guildpulse/ tests/  # Check only
 ```
 
 ### Linting
 
 ```bash
-ruff check src/ tests/
-ruff check --fix src/ tests/  # Auto-fix
+ruff check guildpulse/ tests/
+ruff check --fix guildpulse/ tests/  # Auto-fix
 ```
 
 ### Type Checking
 
 ```bash
-basedpyright src/ tests/
+basedpyright guildpulse/ tests/
 ```
 
 ### Pre-commit Hooks
@@ -213,12 +213,12 @@ pytest --timeout=30  # Increase timeout
 
 **Coverage too low:**
 ```bash
-pytest --cov=src --cov-report=term-missing -v
+pytest --cov=guildpulse --cov-report=term-missing -v
 ```
 
 **Type errors:**
 ```bash
-basedpyright src/ tests/
+basedpyright guildpulse/ tests/
 ```
 
 ## Contributing

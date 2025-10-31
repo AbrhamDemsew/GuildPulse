@@ -23,7 +23,7 @@ class TestOpenAIServiceAdapter:
 
         result = adapter.generate_reply(channel)
 
-        assert result == "Test reply"
+        assert result.content == "Test reply"
         mock_client.chat_completion.assert_called_once()
 
     def test_generate_reply_with_system_prompt(self, infrastructure_environment: Any) -> None:
@@ -38,7 +38,7 @@ class TestOpenAIServiceAdapter:
 
         call_args = mock_client.chat_completion.call_args[0][0]
         assert call_args[0]["role"] == "system"
-        assert call_args[0]["content"] == adapter.settings.CHAT_SYSTEM_PROMPT
+        assert call_args[0]["content"] == adapter.default_system_prompt
 
     def test_generate_reply_with_existing_messages(self):
         """Test reply generation with existing channel messages."""
@@ -156,7 +156,7 @@ class TestOpenAIServiceAdapterEdgeCases:
 
         result = adapter.generate_reply(channel)
 
-        assert result == "Test reply"
+        assert result.content == "Test reply"
         call_args = mock_client.chat_completion.call_args[0][0]
         assert len(call_args) == 1
 

@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING, Any
 
-from guildpulse.config import get_settings
+from guildpulse.domain.shared.completion_result import CompletionResult
 from guildpulse.infrastructure.ai.openai.client import OpenAIClient
 
 if TYPE_CHECKING:
@@ -12,15 +12,27 @@ if TYPE_CHECKING:
 class OpenAIServiceAdapter:
     """Adapter for OpenAI API service."""
 
-    def __init__(self, client: OpenAIClient) -> None:
+    def __init__(self, client: OpenAIClient, default_system_prompt: str = "") -> None:
         self.client = client
-        self.settings = get_settings()
+        self.default_system_prompt = default_system_prompt
 
-    def generate_reply(self, channel: "Channel", image_urls: tuple[str, ...] = ()) -> str:
-        """Generate a reply using OpenAI."""
+    def generate_reply(
+        self,
+        channel: "Channel",
+        image_urls: tuple[str, ...] = (),
+        *,
+        system_prompt: str | None = None,
+        knowledge_context: str | None = None,
+        model_name: str | None = None,
+        max_tokens: int | None = None,
+        temperature: float | None = None,
+    ) -> CompletionResult:
         messages = channel.get_messages_for_api()
-        system_prompt = self.settings.CHAT_SYSTEM_PROMPT
-        api_messages: list[dict[str, Any]] = [{"role": "system", "content": system_prompt}]
+        prompt = system_prompt or self.default_system_prompt
+        if knowledge_context:
+            prompt = f"{prompt}\n\n{knowledge_context}"
+
+        api_messages: list[dict[str, Any]] = [{"role": "system", "content": prompt}]
         for msg in messages[-100:]:
             api_messages.append({"role": msg["role"], "content": msg["content"]})
 
@@ -33,4 +45,16 @@ class OpenAIServiceAdapter:
                     multimodal_content.append({"type": "image_url", "image_url": {"url": url}})
                 api_messages[-1] = {"role": "user", "content": multimodal_content}
 
-        return self.client.chat_completion(api_messages)
+        prompt_estimate = sum(len(str(item.get("content", ""))) for item in api_messages) // 4
+        content = self.client.chat_completion(
+            api_messages,
+            model=model_name,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+        completion_estimate = max(1, len(content) // 4)
+        return CompletionResult(
+            content=content,
+            prompt_tokens=prompt_estimate,
+            completion_tokens=completion_estimate,
+        )

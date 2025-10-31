@@ -9,6 +9,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
+from guildpulse.application.messaging.handlers import MessageProcessingResult
 from guildpulse.frameworks_drivers.discord.bot import (
     ConfirmClearView,
     handle_message_processing,
@@ -167,6 +168,9 @@ class TestHandleMessageProcessing:
         mock_message.channel.id = 123
         mock_message.content = "Hello bot"
         mock_message.author.display_name = "Alice"
+        mock_message.author.id = 42
+        mock_message.guild = Mock()
+        mock_message.guild.id = 99
         mock_message.attachments = []
         mock_typing = AsyncMock()
         mock_message.channel.typing.return_value = mock_typing
@@ -177,7 +181,7 @@ class TestHandleMessageProcessing:
         mock_bot.user.name = "TestBot"
 
         mock_processor = Mock()
-        mock_processor.execute.return_value = "Test response"
+        mock_processor.execute_detailed.return_value = MessageProcessingResult(reply="Test response")
 
         mock_lock = Mock()
         mock_lock.__aenter__ = AsyncMock()
@@ -198,7 +202,7 @@ class TestHandleMessageProcessing:
                 mock_message, mock_processor, mock_bot, mock_lock, rate_limiter=mock_rate_limiter
             )
 
-        assert mock_processor.execute.called
+        assert mock_processor.execute_detailed.called
 
     @pytest.mark.asyncio
     async def test_handle_message_with_attachment(self):
@@ -208,6 +212,8 @@ class TestHandleMessageProcessing:
         mock_message.channel.id = 123
         mock_message.content = "Check this out"
         mock_message.author.display_name = "Bob"
+        mock_message.author.id = 43
+        mock_message.guild = None
         mock_typing = AsyncMock()
         mock_message.channel.typing.return_value = mock_typing
         mock_message.channel.send = AsyncMock()
@@ -224,7 +230,7 @@ class TestHandleMessageProcessing:
         mock_bot.user.name = "TestBot"
 
         mock_processor = Mock()
-        mock_processor.execute.return_value = "Response to image"
+        mock_processor.execute_detailed.return_value = MessageProcessingResult(reply="Response to image")
 
         mock_lock = Mock()
         mock_lock.__aenter__ = AsyncMock()
@@ -242,7 +248,7 @@ class TestHandleMessageProcessing:
                 mock_message, mock_processor, mock_bot, mock_lock, rate_limiter=Mock()
             )
 
-        assert mock_processor.execute.called
+        assert mock_processor.execute_detailed.called
 
     @pytest.mark.asyncio
     async def test_handle_message_mentions(self):
@@ -252,6 +258,8 @@ class TestHandleMessageProcessing:
         mock_message.channel.id = 123
         mock_message.content = "@TestBot help me"
         mock_message.author.display_name = "Charlie"
+        mock_message.author.id = 44
+        mock_message.guild = None
         mock_message.attachments = []
         mock_typing = AsyncMock()
         mock_message.channel.typing.return_value = mock_typing
@@ -262,7 +270,7 @@ class TestHandleMessageProcessing:
         mock_bot.user.name = "TestBot"
 
         mock_processor = Mock()
-        mock_processor.execute.return_value = "Help response"
+        mock_processor.execute_detailed.return_value = MessageProcessingResult(reply="Help response")
 
         mock_lock = Mock()
         mock_lock.__aenter__ = AsyncMock()
@@ -280,7 +288,7 @@ class TestHandleMessageProcessing:
                 mock_message, mock_processor, mock_bot, mock_lock, rate_limiter=Mock()
             )
 
-        assert mock_processor.execute.called
+        assert mock_processor.execute_detailed.called
 
 
 class TestSetupDiscordBot:

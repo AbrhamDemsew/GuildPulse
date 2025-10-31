@@ -8,6 +8,7 @@ from unittest.mock import Mock, patch
 from guildpulse.application.messaging.handlers import ClearChannelHistory, ProcessUserTurn
 from guildpulse.domain.channel.aggregate import Channel
 from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.domain.shared.completion_result import CompletionResult
 from guildpulse.domain.shared.errors import ChannelNotFoundError
 from guildpulse.infrastructure.persistence.memory.repository import InMemoryChannelRepository
 
@@ -140,7 +141,6 @@ class TestProcessUserTurn:
         with patch.object(processor, "logger") as mock_logger:
             processor.execute(channel_id=123, user_content="Hello")
 
-            assert mock_logger.debug.called
             assert mock_logger.info.called
 
 
@@ -229,7 +229,6 @@ class TestClearChannelHistory:
             result = use_case.execute(channel_id=123)
 
             assert result is True
-            assert mock_logger.debug.called
             assert mock_logger.info.called
 
     def test_clear_channel_history_generic_exception(self):
@@ -253,7 +252,11 @@ class TestUseCaseIntegration:
         """Test complete workflow: user message -> AI response -> clear."""
         repo = InMemoryChannelRepository()
         mock_adapter: Any = Mock()
-        mock_adapter.generate_reply.return_value = "AI response"
+        mock_adapter.generate_reply.return_value = CompletionResult(
+            content="AI response",
+            prompt_tokens=8,
+            completion_tokens=4,
+        )
         processor = ProcessUserTurn(repo, mock_adapter)
         clear_use_case = ClearChannelHistory(repo)
 

@@ -90,6 +90,8 @@ async def handle_message_processing(
         return
 
     channel_id = message.channel.id
+    guild_id = message.guild.id if message.guild else None
+    user_id = message.author.id
     async with lock:
         try:
             user_message = message.content
@@ -118,15 +120,22 @@ async def handle_message_processing(
             if not clean_message:
                 clean_message = "[attachment]"
             async with message.channel.typing():
-                response = await asyncio.to_thread(
-                    message_processor.execute,
+                result = await asyncio.to_thread(
+                    message_processor.execute_detailed,
                     channel_id,
                     clean_message,
                     author_name=author_name,
                     bot_name=bot_name,
                     image_urls=image_urls,
+                    guild_id=guild_id,
+                    user_id=user_id,
                 )
 
+            if result.blocked:
+                await message.channel.send(result.reply)
+                return
+
+            response = result.reply
             if response:
                 await message.channel.send(response)
             else:
@@ -161,6 +170,12 @@ def setup_discord_bot() -> commands.Bot:
     # Get use cases from DI
     message_processor = root.create_message_processor()
     clear_history_use_case = root.create_clear_history_use_case()
+    get_guild_settings = root.create_get_guild_settings()
+    update_guild_settings = root.create_update_guild_settings()
+    usage_report = root.create_usage_report()
+    add_knowledge = root.create_add_knowledge()
+    list_knowledge = root.create_list_knowledge()
+    search_knowledge = root.create_search_knowledge()
 
     logger.info("Discord bot initialized with Clean Architecture and DI")
 
@@ -183,8 +198,7 @@ def setup_discord_bot() -> commands.Bot:
             logger.warning("Bot user not initialized")
 
     @bot.event
-    @bot.event
-    async def on_message(message: discord.Message) -> None:  # type: ignore[unused-function]  # Called by discord.py client at runtime
+    async def on_message(message: discord.Message) -> None:  # type: ignore[unused-function]
         if message.author.bot:
             return
 
@@ -238,8 +252,18 @@ def setup_discord_bot() -> commands.Bot:
             inline=False,
         )
         embed.add_field(
-            name="/clear",
-            value="Clear conversation history (admin only)",
+            name="/usage",
+            value="Show today's token and message usage for this guild",
+            inline=False,
+        )
+        embed.add_field(
+            name="/config show",
+            value="Show guild-specific AI configuration",
+            inline=False,
+        )
+        embed.add_field(
+            name="/kb add",
+            value="Add guild knowledge for retrieval-augmented replies",
             inline=False,
         )
         await interaction.response.send_message(embed=embed)
@@ -250,18 +274,21 @@ def setup_discord_bot() -> commands.Bot:
             await interaction.response.send_message("Error: Could not determine channel.")
             return
         channel_id = interaction.channel.id
+        guild_id = interaction.guild_id
         lock = get_lock(channel_id)
         await interaction.response.defer(ephemeral=False)
         async with lock:
-            response = await asyncio.to_thread(
-                message_processor.execute,
+            result = await asyncio.to_thread(
+                message_processor.execute_detailed,
                 channel_id,
                 query,
                 author_name=interaction.user.name,
                 bot_name=bot.user.name if bot.user else "Bot",
                 image_urls=(),
+                guild_id=guild_id,
+                user_id=interaction.user.id,
             )
-        await interaction.followup.send(response)
+        await interaction.followup.send(result.reply)
 
     @bot.tree.command(name="clear", description="Clear conversation history")
     @app_commands.checks.has_permissions(manage_messages=True)
@@ -280,6 +307,102 @@ def setup_discord_bot() -> commands.Bot:
         msg = await interaction.response.send_message(embed=embed, view=view)
         view.message = msg  # type: ignore
         await view.wait()
+
+    @bot.tree.command(name="usage", description="Show guild usage for today")
+    @app_commands.checks.has_permissions(manage_guild=True)
+    async def usage_command(interaction: discord.Interaction) -> None:
+        if interaction.guild is None:
+            await interaction.response.send_message("Usage is only available inside a guild.", ephemeral=True)
+            return
+        totals = usage_report.execute(interaction.guild.id)
+        await interaction.response.send_message(
+            f"Guild usage today: {totals.message_count} messages, "
+            f"{totals.total_tokens} tokens "
+            f"(avg {totals.average_tokens_per_message:.1f} tokens/message).",
+            ephemeral=True,
+        )
+
+    config_group = app_commands.Group(name="config", description="Manage guild AI settings")
+
+    @config_group.command(name="show", description="Show current guild configuration")
+    @app_commands.checks.has_permissions(manage_guild=True)
+    async def config_show(interaction: discord.Interaction) -> None:
+        if interaction.guild is None:
+            await interaction.response.send_message("Config is only available inside a guild.", ephemeral=True)
+            return
+        cfg = get_guild_settings.execute(interaction.guild.id)
+        await interaction.response.send_message(
+            f"Model: {cfg.model_name}\n"
+            f"History: {cfg.max_history}\n"
+            f"Moderation: {cfg.moderation_enabled}\n"
+            f"Knowledge: {cfg.knowledge_enabled}\n"
+            f"Daily quotas: {cfg.daily_message_quota} messages / {cfg.daily_token_quota} tokens",
+            ephemeral=True,
+        )
+
+    @config_group.command(name="prompt", description="Update guild system prompt")
+    @app_commands.checks.has_permissions(manage_guild=True)
+    async def config_prompt(interaction: discord.Interaction, prompt: str) -> None:
+        if interaction.guild is None:
+            await interaction.response.send_message("Config is only available inside a guild.", ephemeral=True)
+            return
+        updated = update_guild_settings.update_prompt(
+            interaction.guild.id, prompt, settings.CHAT_SYSTEM_PROMPT
+        )
+        await interaction.response.send_message(
+            f"Updated guild prompt ({len(updated.system_prompt)} chars).", ephemeral=True
+        )
+
+    bot.tree.add_command(config_group)
+
+    kb_group = app_commands.Group(name="kb", description="Manage guild knowledge base")
+
+    @kb_group.command(name="add", description="Add a knowledge document")
+    @app_commands.checks.has_permissions(manage_guild=True)
+    async def kb_add(interaction: discord.Interaction, title: str, content: str) -> None:
+        if interaction.guild is None:
+            await interaction.response.send_message("Knowledge base requires a guild.", ephemeral=True)
+            return
+        from guildpulse.domain.knowledge.models import KnowledgeDocument
+
+        document = KnowledgeDocument(
+            guild_id=interaction.guild.id,
+            title=title,
+            content=content,
+            created_by=interaction.user.id,
+        )
+        saved = add_knowledge.execute(document)
+        await interaction.response.send_message(
+            f"Added knowledge document '{saved.title}' with {len(saved.chunks)} chunks.",
+            ephemeral=True,
+        )
+
+    @kb_group.command(name="list", description="List knowledge documents")
+    @app_commands.checks.has_permissions(manage_guild=True)
+    async def kb_list(interaction: discord.Interaction) -> None:
+        if interaction.guild is None:
+            await interaction.response.send_message("Knowledge base requires a guild.", ephemeral=True)
+            return
+        docs = list_knowledge.execute(interaction.guild.id)
+        if not docs:
+            await interaction.response.send_message("No knowledge documents yet.", ephemeral=True)
+            return
+        lines = [f"- #{doc.document_id}: {doc.title}" for doc in docs[:20]]
+        await interaction.response.send_message("\n".join(lines), ephemeral=True)
+
+    @kb_group.command(name="search", description="Search guild knowledge")
+    async def kb_search(interaction: discord.Interaction, query: str) -> None:
+        if interaction.guild is None:
+            await interaction.response.send_message("Knowledge base requires a guild.", ephemeral=True)
+            return
+        hits = search_knowledge.execute(interaction.guild.id, query, limit=3)
+        if not hits:
+            await interaction.response.send_message("No matching knowledge found.", ephemeral=True)
+            return
+        lines = [f"[{hit.chunk.document_title}] {hit.chunk.content[:200]}" for hit in hits]
+        await interaction.response.send_message("\n".join(lines), ephemeral=True)
+
+    bot.tree.add_command(kb_group)
 
     @bot.event
     async def on_error(event: str, *args: Any, **kwargs: Any) -> None:  # type: ignore[unused-function]  # Called by discord.py client at runtime

@@ -41,6 +41,11 @@ class Settings(BaseSettings):
         description="System prompt for chat completions",
     )
 
+    HTTP_ENABLED: bool = Field(default=True, description="Enable admin HTTP API")
+    HTTP_HOST: str = Field(default="0.0.0.0", description="HTTP bind host")
+    HTTP_PORT: int = Field(default=8080, description="HTTP bind port")
+    HTTP_API_KEY: str = Field(default="", description="Optional API key for admin routes")
+
     @field_validator("OPENAI_API_KEY")
     @classmethod
     def validate_api_key(cls, v: str) -> str:

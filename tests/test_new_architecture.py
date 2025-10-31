@@ -9,6 +9,7 @@ import pytest
 from guildpulse.application.messaging.handlers import ProcessUserTurn
 from guildpulse.domain.channel.aggregate import Channel
 from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.domain.shared.completion_result import CompletionResult
 from guildpulse.domain.shared.errors import MessageValidationError
 from guildpulse.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
 from guildpulse.infrastructure.persistence.memory.repository import InMemoryChannelRepository
@@ -18,8 +19,11 @@ from guildpulse.infrastructure.persistence.memory.repository import InMemoryChan
 def mock_ai_service() -> Any:
     """Create a mock AI service."""
     mock = Mock(spec=OpenAIServiceAdapter)
-    mock.generate_reply.return_value = "Test response"
-    mock.generate_reply.return_value = "Test response"
+    mock.generate_reply.return_value = CompletionResult(
+        content="Test response",
+        prompt_tokens=5,
+        completion_tokens=3,
+    )
     return mock
 
 

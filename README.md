@@ -7,8 +7,14 @@ GuildPulse is a production-oriented Discord community assistant with OpenAI inte
 - AI-powered replies when mentioned, in DMs, or when replying to the bot
 - Vision support for image attachments in guild channels
 - Rolling conversation history with configurable retention
-- Slash commands (`/chat`, `/help`, `/clear`) and prefix commands (`*help`, `*clear`)
-- SQLite or in-memory channel persistence
+- Slash commands (`/chat`, `/help`, `/clear`, `/usage`, `/config`, `/kb`)
+- Per-guild settings: custom prompts, models, quotas, channel allowlists
+- Moderation pipeline with audit logging and per-user rate limits
+- Knowledge base with chunking and retrieval-augmented replies
+- Usage analytics with daily token/message quotas
+- FastAPI admin API for guilds, analytics, moderation, knowledge, plugins, and ops
+- Plugin registry for extensible guild commands
+- SQLite persistence across channels, settings, usage, and knowledge
 - Rate limiting, structured logging, and Docker deployment
 - 200+ pytest tests with layered coverage (domain, application, infrastructure, Discord adapters)
 

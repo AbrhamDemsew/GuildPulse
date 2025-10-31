@@ -63,7 +63,7 @@ class TestOpenAIAdapterEdgeCases:
 
         result = adapter.generate_reply(channel, image_urls=())
 
-        assert result == "Response"
+        assert result.content == "Response"
         call_args = mock_client.chat_completion.call_args[0][0]
         assert len(call_args) == 1  # Only system prompt
 

@@ -11,6 +11,7 @@ import pytest
 from guildpulse.config import get_settings
 from guildpulse.domain.channel.aggregate import Channel
 from guildpulse.domain.channel.value_objects import Message, MessageContent
+from guildpulse.domain.shared.completion_result import CompletionResult
 
 DEFAULT_TEST_ENV = {
     "DISCORD_TOKEN": "test-token",
@@ -115,7 +116,11 @@ def mock_ai_adapter(mock_openai_client: mock.Mock) -> mock.Mock:
     from guildpulse.infrastructure.ai.openai.adapter import OpenAIServiceAdapter
 
     adapter = mock.Mock(spec=OpenAIServiceAdapter)
-    adapter.generate_reply.return_value = "Test response"
+    adapter.generate_reply.return_value = CompletionResult(
+        content="Test response",
+        prompt_tokens=10,
+        completion_tokens=5,
+    )
     return adapter
 
 
